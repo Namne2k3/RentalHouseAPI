@@ -11,6 +11,6 @@ namespace RentalHouse.Domain.Entities
         public string ImageUrl { get; set; } = string.Empty;
         [ForeignKey("NhaTro")]
         public int NhaTroID { get; set; }
-        public required NhaTro NhaTro { get; set; }
+        public NhaTro NhaTro { get; set; }
     }
 }

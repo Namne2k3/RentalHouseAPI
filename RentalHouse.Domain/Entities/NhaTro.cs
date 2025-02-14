@@ -33,6 +33,9 @@ namespace RentalHouse.Domain.Entities
         [Column(TypeName = "nvarchar(50)")]
         public string? Area { get; set; }
 
+        [Column(TypeName = "nvarchar(50)")]
+        public string? BedRoom { get; set; }
+
         public DateTime? PostedDate { get; set; }
         public DateTime? ExpiredDate { get; set; }
 
@@ -42,16 +45,11 @@ namespace RentalHouse.Domain.Entities
         [Column(TypeName = "nvarchar(50)")]
         public string? Code { get; set; }
 
-        [Column(TypeName = "nvarchar(100)")]
-        public string? ElectricityPrice { get; set; }
+        [Column(TypeName = "nvarchar(50)")]
+        public string? BedRoomCount { get; set; }
 
-        [Column(TypeName = "nvarchar(100)")]
-        public string? InternetPrice { get; set; }
 
         [Column(TypeName = "nvarchar(255)")]
-        public string? Utilities { get; set; }
-
-        [Column(TypeName = "nvarchar(1000)")]
         public string? Furniture { get; set; }
 
         public float? Latitude { get; set; }
