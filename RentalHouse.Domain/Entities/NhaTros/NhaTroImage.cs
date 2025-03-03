@@ -1,7 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
-namespace RentalHouse.Domain.Entities
+namespace RentalHouse.Domain.Entities.NhaTros
 {
     public class NhaTroImage
     {
@@ -9,8 +8,8 @@ namespace RentalHouse.Domain.Entities
         public int ID { get; set; }
         [Required]
         public string ImageUrl { get; set; } = string.Empty;
-        [ForeignKey("NhaTro")]
+
         public int NhaTroID { get; set; }
-        public NhaTro NhaTro { get; set; }
+        public NhaTro? NhaTro { get; set; }
     }
 }

@@ -1,11 +1,12 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using RentalHouse.Domain.Entities.Auth;
+using RentalHouse.Domain.Entities.Favorites;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace RentalHouse.Domain.Entities
+namespace RentalHouse.Domain.Entities.NhaTros
 {
     public class NhaTro
     {
-        [Key]
         public int Id { get; set; }
         [Required]
         [Column(TypeName = "nvarchar(500)")]
@@ -61,7 +62,11 @@ namespace RentalHouse.Domain.Entities
         public float? AreaM2 { get; set; }
         public float? PricePerM2 { get; set; }
 
+        public int UserId { get; set; }
+        public User? User { get; set; }
+
         // Quan hệ 1-N với NhaTroImages
         public List<NhaTroImage> Images { get; set; } = new();
+        public List<Favorite> Favorites { get; set; } = new();
     }
 }

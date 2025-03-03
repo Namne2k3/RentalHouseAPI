@@ -1,4 +1,4 @@
-﻿using RentalHouse.Domain.Entities;
+﻿using RentalHouse.Domain.Entities.NhaTros;
 
 namespace RentalHouse.Application.DTOs.Conversions
 {
@@ -31,7 +31,8 @@ namespace RentalHouse.Application.DTOs.Conversions
                 PriceVnd = nhatro.PriceVnd,
                 AreaM2 = nhatro.AreaM2,
                 PricePerM2 = nhatro.PricePerM2,
-                Images = nhatro.ImageUrls.Select(url => new NhaTroImage { ImageUrl = url }).ToList()
+                Images = nhatro.ImageUrls.Select(url => new NhaTroImage { ImageUrl = url }).ToList(),
+                UserId = nhatro.UserId
             };
         }
 
@@ -64,7 +65,11 @@ namespace RentalHouse.Application.DTOs.Conversions
                     nhaTro.PriceVnd,
                     nhaTro.AreaM2,
                     nhaTro.PricePerM2,
-                    nhaTro.Images.Select(img => img.ImageUrl).ToList() // Chuyển danh sách ảnh sang List<string>
+                    nhaTro.Images.Select(img => img.ImageUrl).ToList(), // Chuyển danh sách ảnh sang List<string>,
+                    nhaTro.UserId,
+                    nhaTro.User!.FullName,
+                    nhaTro.User!.PhoneNumber!,
+                    nhaTro.User!.Email
                 );
 
                 return (singleNhaTro, null);
@@ -99,7 +104,11 @@ namespace RentalHouse.Application.DTOs.Conversions
                         nt.PriceVnd,
                         nt.AreaM2,
                         nt.PricePerM2,
-                        nt.Images.Select(img => img.ImageUrl).ToList()
+                        nt.Images.Select(img => img.ImageUrl).ToList(),
+                        nt.UserId,
+                        nt.User!.FullName,
+                        nt.User.PhoneNumber!,
+                        nt.User!.Email
                     );
                 }
                 ).ToList();

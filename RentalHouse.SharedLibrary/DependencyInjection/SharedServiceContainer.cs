@@ -17,6 +17,17 @@ namespace RentalHouse.SharedLibrary.DependencyInjection
                 )
             );
 
+            services.AddCors(options =>
+            {
+                options.AddPolicy(name: "AllowOrigin",
+                    builder =>
+                    {
+                        builder.WithOrigins("http://localhost:5173")
+                                            .AllowAnyHeader()
+                                            .AllowAnyMethod();
+                    });
+            });
+
             Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Information()
                 .WriteTo.Debug()
@@ -35,6 +46,7 @@ namespace RentalHouse.SharedLibrary.DependencyInjection
         public static IApplicationBuilder UseSharedPolicies(this IApplicationBuilder app)
         {
             // cấu hình sử dụng global exception
+            app.UseCors("AllowOrigin");
             app.UseMiddleware<GlobalException>();
 
             return app;
