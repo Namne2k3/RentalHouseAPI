@@ -8,7 +8,8 @@
         string? commune,
         string? street,
         string? address,
-        decimal? price,
+        decimal? price1,
+        decimal? price2,
         decimal? area,
         int? bedRoomCount
     );

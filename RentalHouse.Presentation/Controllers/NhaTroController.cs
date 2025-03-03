@@ -49,7 +49,8 @@ namespace RentalHouse.Presentation.Controllers
                 filterNhaTroDTO.commune!,
                 filterNhaTroDTO.street!,
                 filterNhaTroDTO.address!,
-                filterNhaTroDTO.price!,
+                filterNhaTroDTO.price1!,
+                filterNhaTroDTO.price2!,
                 filterNhaTroDTO.area!,
                 filterNhaTroDTO.bedRoomCount!
             );

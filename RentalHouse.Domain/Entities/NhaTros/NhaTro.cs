@@ -24,18 +24,13 @@ namespace RentalHouse.Domain.Entities.NhaTros
 
         [Column(TypeName = "nvarchar(500)")]
         public string? Url { get; set; }
-
-        [Column(TypeName = "nvarchar(50)")]
-        public string? Price { get; set; }
+        public int? Price { get; set; }
 
         [Column(TypeName = "nvarchar(50)")]
         public string? PriceExt { get; set; }
 
-        [Column(TypeName = "nvarchar(50)")]
-        public string? Area { get; set; }
-
-        [Column(TypeName = "nvarchar(50)")]
-        public string? BedRoom { get; set; }
+        public int? Area { get; set; }
+        public int? BedRoom { get; set; }
 
         public DateTime? PostedDate { get; set; }
         public DateTime? ExpiredDate { get; set; }
@@ -46,8 +41,8 @@ namespace RentalHouse.Domain.Entities.NhaTros
         [Column(TypeName = "nvarchar(50)")]
         public string? Code { get; set; }
 
-        [Column(TypeName = "nvarchar(50)")]
-        public string? BedRoomCount { get; set; }
+
+        public int? BedRoomCount { get; set; }
 
 
         [Column(TypeName = "nvarchar(255)")]

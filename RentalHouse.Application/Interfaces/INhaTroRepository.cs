@@ -6,7 +6,7 @@ namespace RentalHouse.Application.Interfaces
 {
     public interface INhaTroRepository : ICrudGenericInterface<NhaTro>, ICanGetAllWithoutParam<NhaTro>, ICanUpdate<NhaTro>
     {
-        Task<PagedResultDTO<NhaTroDTO>> GetAllAsyncWithFilters(int page, int pageSize, string? city, string? district, string? commune, string? street, string? address, decimal? price,
+        Task<PagedResultDTO<NhaTroDTO>> GetAllAsyncWithFilters(int page, int pageSize, string? city, string? district, string? commune, string? street, string? address, decimal? price1, decimal? price2,
                 decimal? area,
                 int? bedRoomCount);
     }

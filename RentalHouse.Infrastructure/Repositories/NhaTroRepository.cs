@@ -2,7 +2,6 @@
 using RentalHouse.Application.DTOs;
 using RentalHouse.Application.DTOs.Conversions;
 using RentalHouse.Application.Interfaces;
-using RentalHouse.Application.Utils;
 using RentalHouse.Domain.Entities.NhaTros;
 using RentalHouse.Infrastructure.Data;
 using RentalHouse.SharedLibrary.Logs;
@@ -113,45 +112,59 @@ namespace RentalHouse.Infrastructure.Repositories
             string? commune = null,
             string? street = null,
             string? address = null,
-            decimal? price = null,
+            decimal? price1 = null,
+            decimal? price2 = null,
             decimal? area = null,
             int? bedRoomCount = null
         )
         {
             try
             {
+                // Query server-side: chỉ những điều kiện mà EF có thể dịch sang SQL
                 var query = _context.NhaTros
                     .AsNoTracking()
                     .Include(n => n.Images)
                     .Include(u => u.User)
                     .Where(n =>
                         (address != null &&
-                            (n.Address != null && n.Address.ToLower().Contains(address.ToLower())) &&
-                            (area == null || (n.Area != null && AreaParserUtil.ParseArea(n.Area) <= area.Value)) &&
-                            (price == null || (n.Price != null && PriceParserUtil.ParsePrice(n.Price) <= price.Value)) &&
-                            (bedRoomCount == null || (n.BedRoomCount != null && RoomParserUtil.ParseRoomCount(n.BedRoomCount) == bedRoomCount.Value))
+                            (n.Address != null && n.Address.ToLower().Contains(address.ToLower()))
                         )
                         ||
                         (address == null &&
                             (city == null || (n.Address != null && n.Address.ToLower().Contains(city.ToLower()))) &&
                             (district == null || (n.Address != null && n.Address.ToLower().Contains(district.ToLower()))) &&
                             (commune == null || (n.Address != null && n.Address.ToLower().Contains(commune.ToLower()))) &&
-                            (street == null || (n.Address != null && n.Address.ToLower().Contains(street.ToLower()))) &&
-                            (area == null || (n.Area != null && AreaParserUtil.ParseArea(n.Area) <= area.Value)) &&
-                            (price == null || (n.Price != null && PriceParserUtil.ParsePrice(n.Price) <= price.Value)) &&
-                            (bedRoomCount == null || (n.BedRoomCount != null && RoomParserUtil.ParseRoomCount(n.BedRoomCount) == bedRoomCount.Value))
+                            (street == null || (n.Address != null && n.Address.ToLower().Contains(street.ToLower())))
                         )
                     );
 
+                // Apply additional filters directly in the query
+                if (price1 != null && price2 != null)
+                {
+                    query = query.Where(n => n.Price >= price1 && n.Price <= price2);
+                }
+
+                if (area != null)
+                {
+                    query = query.Where(n => n.Area != null && n.Area <= area.Value);
+                }
+
+                if (bedRoomCount != null)
+                {
+                    query = query.Where(n => n.BedRoomCount != null && n.BedRoomCount == bedRoomCount.Value);
+                }
+
+                // Tính tổng số mục dựa trên dữ liệu đã được filter
                 var totalItems = await query.CountAsync();
 
-                var nhatros = await query
+                // Sắp xếp và phân trang trên tập dữ liệu đã filter
+                var pagedData = await query
                     .OrderByDescending(n => n.Id)
                     .Skip((page - 1) * pageSize)
                     .Take(pageSize)
                     .ToListAsync();
 
-                var (_, list) = NhaTroConversion.FromEntity(null, nhatros);
+                var (_, list) = NhaTroConversion.FromEntity(null, pagedData);
 
                 return new PagedResultDTO<NhaTroDTO>(
                     TotalItems: totalItems,
@@ -165,6 +178,7 @@ namespace RentalHouse.Infrastructure.Repositories
                 throw new InvalidOperationException("Xảy ra lỗi khi truy xuất dữ liệu!", ex);
             }
         }
+
 
 
         public async Task<NhaTro> GetByAsync(Expression<Func<NhaTro, bool>> predicate)

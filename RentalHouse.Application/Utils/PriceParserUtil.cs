@@ -23,15 +23,15 @@ namespace RentalHouse.Application.Utils
             string unit = match.Groups[2].Value;
 
             // Chuyển đổi đơn vị
-            if (unit.StartsWith("t") || unit.StartsWith("bil")) // tỷ
+            if (unit == "tỷ" || unit == "ty" || unit == "bil") // tỷ
             {
                 return (long)(value * 1_000_000_000);
             }
-            else if (unit.StartsWith("tr")) // triệu
+            else if (unit == "triệu" || unit == "tr") // triệu
             {
                 return (long)(value * 1_000_000);
             }
-            else if (unit.StartsWith("k") || unit.StartsWith("ngh")) // nghìn
+            else if (unit == "nghìn" || unit == "k") // nghìn
             {
                 return (long)(value * 1_000);
             }
