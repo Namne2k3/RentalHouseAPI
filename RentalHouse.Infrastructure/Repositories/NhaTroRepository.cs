@@ -114,7 +114,8 @@ namespace RentalHouse.Infrastructure.Repositories
             string? address = null,
             decimal? price1 = null,
             decimal? price2 = null,
-            decimal? area = null,
+            decimal? area1 = null,
+            decimal? area2 = null,
             int? bedRoomCount = null
         )
         {
@@ -144,9 +145,9 @@ namespace RentalHouse.Infrastructure.Repositories
                     query = query.Where(n => n.Price >= price1 && n.Price <= price2);
                 }
 
-                if (area != null)
+                if (area1 != null && area2 != null)
                 {
-                    query = query.Where(n => n.Area != null && n.Area <= area.Value);
+                    query = query.Where(n => n.Area != null && n.Area >= area1.Value && n.Area <= area2.Value);
                 }
 
                 if (bedRoomCount != null)

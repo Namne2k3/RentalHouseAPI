@@ -10,7 +10,8 @@
         string? address,
         decimal? price1,
         decimal? price2,
-        decimal? area,
+        decimal? area1,
+        decimal? area2,
         int? bedRoomCount
     );
 }
