@@ -9,5 +9,7 @@ namespace RentalHouse.Application.Interfaces
         Task<LoginResponse> Login(LoginDTO loginDTO);
         Task<GetUserDTO> GetUser(int userId);
         Task<Response> UpdateUser(ChangeUserDTO changeUserDTO);
+
+        Task<Response> ChangePassword(int userId, string newPassword, string currentPassword);
     }
 }

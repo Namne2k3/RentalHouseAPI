@@ -134,5 +134,26 @@ namespace RentalHouse.Infrastructure.Repositories
 
             return new Response(true, "Cập nhật thông tin tài khoản thành công!");
         }
+
+        public async Task<Response> ChangePassword(int userId, string newPassword, string currentPassword)
+        {
+            var getUser = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+            if (getUser is null)
+            {
+                return new Response(false, "Không tìm thấy tài khoản!");
+            }
+
+            bool verifyPassword = BCrypt.Net.BCrypt.Verify(currentPassword, getUser.Password);
+            if (!verifyPassword)
+            {
+                return new Response(false, "Sai mật khẩu!");
+            }
+
+            _context.Entry(getUser).State = EntityState.Modified;
+            getUser.Password = BCrypt.Net.BCrypt.HashPassword(newPassword);
+            await _context.SaveChangesAsync();
+
+            return new Response(true, "Cập nhật mật khẩu tài khoản thành công!");
+        }
     }
 }

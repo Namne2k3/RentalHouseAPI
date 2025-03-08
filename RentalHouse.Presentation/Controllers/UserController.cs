@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using RentalHouse.Application.DTOs;
 using RentalHouse.Application.Interfaces;
+using RentalHouse.SharedLibrary.Responses;
 using System.Security.Claims;
 
 namespace RentalHouse.Presentation.Controllers
@@ -17,9 +18,9 @@ namespace RentalHouse.Presentation.Controllers
             _repository = repository;
         }
 
-        [HttpPut]
+        [HttpPut("updateUser")]
         [Authorize]
-        public async Task<ActionResult> UpdateUser(ChangeUserDTO changeUserDTO)
+        public async Task<ActionResult<Response>> UpdateUser(ChangeUserDTO changeUserDTO)
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             var userId = int.Parse(userIdClaim!);
@@ -30,6 +31,22 @@ namespace RentalHouse.Presentation.Controllers
             }
 
             var result = await _repository.UpdateUser(changeUserDTO);
+            return result.IsSuccess ? Ok(result) : BadRequest(result);
+        }
+
+        [HttpPut("changePassword")]
+        [Authorize]
+        public async Task<ActionResult<Response>> ChangePassword([FromBody] ChangePasswordDTO changePasswordDTO)
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var userId = int.Parse(userIdClaim!);
+
+            if (userId < 1)
+            {
+                return Forbid("Chưa đăng nhập!");
+            }
+
+            var result = await _repository.ChangePassword(userId, changePasswordDTO.newPassword, changePasswordDTO.currentPassword);
             return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
     }
