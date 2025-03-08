@@ -20,5 +20,7 @@ namespace RentalHouse.Application.Interfaces
             decimal? area2,
             int? bedRoomCount
         );
+
+        Task<IEnumerable<NhaTroDTO>> GetRelateNhaTrosAsync(int nhaTroId, int count);
     }
 }

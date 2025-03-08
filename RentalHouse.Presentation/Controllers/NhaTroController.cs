@@ -95,5 +95,19 @@ namespace RentalHouse.Presentation.Controllers
 
             return response.IsSuccess ? Ok(response) : BadRequest(response);
         }
+        [HttpGet("GetNhaTroById")]
+        public async Task<ActionResult<NhaTroDTO>> GetNhaTroById(int id)
+        {
+            var nhatro = await _repository.FindByIdAsync(id);
+            var (nhatroDTO, _) = NhaTroConversion.FromEntity(nhatro, null);
+            return nhatroDTO?.Id > 0 ? Ok(nhatroDTO) : BadRequest(nhatroDTO);
+        }
+
+        [HttpGet("GetRelatedNhaTros")]
+        public async Task<ActionResult<IEnumerable<NhaTroDTO>>> GetRelatedNhaTros(int id)
+        {
+            var relatedNhaTros = await _repository.GetRelateNhaTrosAsync(id, 4);
+            return relatedNhaTros.Any() ? Ok(relatedNhaTros) : BadRequest(relatedNhaTros);
+        }
     }
 }

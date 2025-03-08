@@ -73,7 +73,10 @@ namespace RentalHouse.Infrastructure.Repositories
         {
             try
             {
-                var product = await _context.NhaTros.FindAsync(id);
+                var product = await _context.NhaTros
+                    .Include(n => n.Images)
+                    .Include(n => n.User)
+                    .FirstOrDefaultAsync(n => n.Id == id);
                 return product is not null ? product : null!;
 
             }
@@ -196,6 +199,37 @@ namespace RentalHouse.Infrastructure.Repositories
                 LogException.LogExceptions(ex);
 
                 throw new InvalidOperationException("Xảy ra lỗi khi truy xuất dữ liệu!");
+            }
+        }
+
+        public async Task<IEnumerable<NhaTroDTO>> GetRelateNhaTrosAsync(int nhaTroId, int count)
+        {
+            try
+            {
+                var currentNhaTro = await _context.NhaTros.AsNoTracking().FirstOrDefaultAsync(n => n.Id == nhaTroId);
+
+                if (currentNhaTro == null)
+                {
+                    return Enumerable.Empty<NhaTroDTO>();
+                }
+
+                var relatedNhaTros = await _context.NhaTros.AsNoTracking()
+                    .Include(n => n.User)
+                    .Include(n => n.Images)
+                    .Where(n => n.Id != nhaTroId && n.Price >= currentNhaTro.Price * 0.8m && n.Price <= currentNhaTro.Price * 1.2m)
+                    .Take(count)
+                    .ToListAsync();
+
+                var (_, listNhaTroDTOS) = NhaTroConversion.FromEntity(null, relatedNhaTros);
+
+                return listNhaTroDTOS != null ? listNhaTroDTOS : Enumerable.Empty<NhaTroDTO>();
+
+
+            }
+            catch (Exception ex)
+            {
+                LogException.LogExceptions(ex);
+                throw new InvalidOperationException("Xảy ra lỗi khi tìm dữ liệu nhà trọ liên quan!");
             }
         }
 
