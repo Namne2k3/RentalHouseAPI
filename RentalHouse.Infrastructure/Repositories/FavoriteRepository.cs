@@ -2,6 +2,7 @@
 using RentalHouse.Application.DTOs;
 using RentalHouse.Application.Interfaces;
 using RentalHouse.Domain.Entities.Favorites;
+using RentalHouse.Domain.Entities.NhaTros;
 using RentalHouse.Infrastructure.Data;
 using RentalHouse.SharedLibrary.Interfaces;
 using RentalHouse.SharedLibrary.Logs;
@@ -21,7 +22,6 @@ namespace RentalHouse.Infrastructure.Repositories
         {
             try
             {
-
                 // Kiểm tra xem người dùng có tồn tại hay không
                 var userExists = await _context.Users.AnyAsync(u => u.Id == entity.UserId);
                 if (!userExists)
@@ -35,11 +35,36 @@ namespace RentalHouse.Infrastructure.Repositories
                     return new FavoriteResponse(0, false, "Bạn đã lưu thông tin nhà trọ này trước đó!");
                 }
 
+                // Thêm thực thể mới vào cơ sở dữ liệu
                 var currentFav = _context.Favorites.Add(entity).Entity;
                 await _context.SaveChangesAsync();
-                if (currentFav is not null && currentFav.Id > 0)
+
+                // Truy vấn lại thực thể vừa được thêm vào với Select
+                var addedFav = await _context.Favorites
+                    .Where(f => f.Id == currentFav.Id)
+                    .Select(f => new Favorite
+                    {
+                        Id = f.Id,
+                        UserId = f.UserId,
+                        NhaTroId = f.NhaTroId,
+                        DateSaved = f.DateSaved,
+                        NhaTro = new NhaTro
+                        {
+                            Id = f.NhaTro.Id,
+                            Title = f.NhaTro.Title,
+                            Address = f.NhaTro.Address,
+                            Images = f.NhaTro.Images.Select(i => new NhaTroImage
+                            {
+                                ID = i.ID,
+                                ImageUrl = i.ImageUrl
+                            }).ToList()
+                        }
+                    })
+                    .FirstOrDefaultAsync();
+
+                if (addedFav is not null)
                 {
-                    return new FavoriteResponse(currentFav.Id, true, "Đã lưu thông tin nhà trọ!");
+                    return new FavoriteResponse(addedFav.Id, true, "Đã lưu thông tin nhà trọ!", addedFav);
                 }
                 else
                 {
@@ -49,7 +74,7 @@ namespace RentalHouse.Infrastructure.Repositories
             catch (Exception ex)
             {
                 LogException.LogExceptions(ex);
-                throw new InvalidOperationException("Có lỗi xảy ra khi thêm thông tin nhà trọ!");
+                throw new InvalidOperationException("Có lỗi xảy ra khi thêm thông tin nhà trọ!", ex);
             }
         }
 
@@ -64,7 +89,7 @@ namespace RentalHouse.Infrastructure.Repositories
                 }
 
 
-                var fav = await GetByAsync(u => u.UserId == entity.UserId && u.NhaTroId == entity.NhaTroId);
+                var fav = await _context.Favorites.FirstOrDefaultAsync(p => p.Id == entity.Id);
                 if (fav is null)
                 {
                     return new Response(false, $"Không tìm thấy thông tin nhà trọ đã lưu!");
@@ -72,7 +97,7 @@ namespace RentalHouse.Infrastructure.Repositories
                 _context.Entry(fav).State = EntityState.Detached;
                 _context.Favorites.Remove(fav);
                 await _context.SaveChangesAsync();
-                return new Response(true, $"Đã bỏ lưu thông tin nhà trọ: {fav.NhaTro!.Title}!");
+                return new Response(true, $"Đã bỏ lưu thông tin nhà trọ!");
             }
             catch (Exception ex)
             {
@@ -105,18 +130,34 @@ namespace RentalHouse.Infrastructure.Repositories
             {
                 var favs = await _context.Favorites
                     .AsNoTracking()
-                    .Include(f => f.NhaTro)
-                    .Include(f => f.User)
                     .Where(f => f.UserId == userId)
                     .OrderByDescending(f => f.DateSaved)
+                    .Select(f => new Favorite
+                    {
+                        Id = f.Id,
+                        UserId = f.UserId,
+                        NhaTroId = f.NhaTroId,
+                        DateSaved = f.DateSaved,
+                        NhaTro = new NhaTro
+                        {
+                            Id = f.NhaTro.Id,
+                            Title = f.NhaTro.Title,
+                            Address = f.NhaTro.Address,
+                            Images = f.NhaTro.Images.Select(i => new NhaTroImage
+                            {
+                                ID = i.ID,
+                                ImageUrl = i.ImageUrl
+                            }).ToList()
+                        }
+                    })
                     .ToListAsync();
 
-                return favs is not null ? favs : null!;
+                return favs ?? new List<Favorite>();
             }
             catch (Exception ex)
             {
                 LogException.LogExceptions(ex);
-                throw new InvalidOperationException("Có lỗi xảy ra khi truy xuất thông tin nhà trọ đã lưu!");
+                throw new InvalidOperationException("Có lỗi xảy ra khi truy xuất thông tin nhà trọ đã lưu!", ex);
             }
         }
 

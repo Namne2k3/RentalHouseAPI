@@ -1,4 +1,4 @@
 ﻿namespace RentalHouse.Application.DTOs
 {
-    public record FavoriteDTO(int NhaTroId);
+    public record FavoriteDTO(int id);
 }

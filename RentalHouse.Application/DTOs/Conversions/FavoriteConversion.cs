@@ -8,7 +8,14 @@ namespace RentalHouse.Application.DTOs.Conversions
         {
             return new Favorite
             {
-                NhaTroId = favoriteDTO.NhaTroId
+                NhaTroId = favoriteDTO.id
+            };
+        }
+        public static Favorite ToFavoriteDelete(this FavoriteDTO favoriteDTO)
+        {
+            return new Favorite
+            {
+                Id = favoriteDTO.id
             };
         }
         public static FavoriteDTO ToFavoriteDTO(this Favorite favorite)

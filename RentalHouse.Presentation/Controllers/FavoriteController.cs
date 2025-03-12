@@ -2,6 +2,7 @@
 using RentalHouse.Application.DTOs;
 using RentalHouse.Application.DTOs.Conversions;
 using RentalHouse.Application.Interfaces;
+using RentalHouse.Domain.Entities.Favorites;
 using RentalHouse.SharedLibrary.Responses;
 using System.Security.Claims;
 
@@ -22,7 +23,7 @@ namespace RentalHouse.Presentation.Controllers
         public async Task<ActionResult<FavoriteResponse>> AddFavorite(FavoriteDTO favoriteDTO)
         {
             string userId = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
-            if (userId != null && favoriteDTO.NhaTroId <= 0)
+            if (userId != null && favoriteDTO.id <= 0)
             {
                 return BadRequest("Không tìm thấy ID của tài khoản hoặc thông tin nhà trọ!");
             }
@@ -38,18 +39,18 @@ namespace RentalHouse.Presentation.Controllers
         public async Task<ActionResult<Response>> RemoveFavorite([FromQuery] FavoriteDTO favoriteDTO)
         {
             string userId = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
-            if (userId != null || favoriteDTO.NhaTroId <= 0)
+            if (userId == null || favoriteDTO.id <= 0)
             {
                 return BadRequest("Không tìm thấy ID của tài khoản hoặc thông tin nhà trọ!");
             }
-            var favEntity = FavoriteConversion.ToFavorite(favoriteDTO);
+            var favEntity = FavoriteConversion.ToFavoriteDelete(favoriteDTO);
             favEntity.UserId = int.Parse(userId!);
             var result = await _repository.DeleteAsync(favEntity);
             return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
 
         [HttpGet("GetFavoritesByCurrentUser")]
-        public async Task<ActionResult<IEnumerable<int>>> GetFavoritesByCurrentUser()
+        public async Task<ActionResult<IEnumerable<Favorite>>> GetFavoritesByCurrentUser()
         {
             string userId = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
             if (userId == null)
@@ -57,9 +58,11 @@ namespace RentalHouse.Presentation.Controllers
                 return BadRequest("Không tìm thấy ID của tài khoản!");
             }
             var favEntities = await _repository.GetFavoritesByUserIdAsync(int.Parse(userId!));
-            var listSavedRetalIds = FavoriteConversion.ToListSavedRentalId(favEntities);
+            //var listSavedRetalIds = FavoriteConversion.ToListSavedRentalId(favEntities);
 
-            return listSavedRetalIds.Any() ? Ok(listSavedRetalIds) : BadRequest(listSavedRetalIds);
+            //return listSavedRetalIds.Any() ? Ok(listSavedRetalIds) : BadRequest(listSavedRetalIds);
+            return favEntities.Any() ? Ok(favEntities) : BadRequest(favEntities);
+
         }
     }
 }
