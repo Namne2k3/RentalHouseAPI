@@ -12,6 +12,7 @@
         decimal? price2,
         decimal? area1,
         decimal? area2,
-        int? bedRoomCount
+        int? bedRoomCount,
+        int? userId
     );
 }

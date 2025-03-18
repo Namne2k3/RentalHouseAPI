@@ -1,6 +1,7 @@
 ﻿using RentalHouse.Application.DTOs;
 using RentalHouse.Domain.Entities.NhaTros;
 using RentalHouse.SharedLibrary.Interfaces;
+using RentalHouse.SharedLibrary.Responses;
 
 namespace RentalHouse.Application.Interfaces
 {
@@ -18,9 +19,12 @@ namespace RentalHouse.Application.Interfaces
             decimal? price2,
             decimal? area1,
             decimal? area2,
-            int? bedRoomCount
+            int? bedRoomCount,
+            int? userId
         );
 
         Task<IEnumerable<NhaTroDTO>> GetRelateNhaTrosAsync(int nhaTroId, int count);
+
+        Task<Response> CreateAsync(NhaTro entity, List<string> images);
     }
 }

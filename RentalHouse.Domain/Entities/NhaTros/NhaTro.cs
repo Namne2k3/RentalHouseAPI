@@ -43,6 +43,7 @@ namespace RentalHouse.Domain.Entities.NhaTros
 
 
         public int? BedRoomCount { get; set; }
+        public int? BathRoom { get; set; }
 
 
         [Column(TypeName = "nvarchar(255)")]

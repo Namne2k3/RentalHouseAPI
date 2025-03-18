@@ -110,6 +110,48 @@ namespace RentalHouse.Infrastructure.Data.Migrations
                     b.ToTable("Wards");
                 });
 
+            modelBuilder.Entity("RentalHouse.Domain.Entities.Appointments.Appointment", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("AppointmentTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("NhaTroId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("OwnerId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NhaTroId");
+
+                    b.HasIndex("OwnerId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Appointments");
+                });
+
             modelBuilder.Entity("RentalHouse.Domain.Entities.Auth.User", b =>
                 {
                     b.Property<int>("Id")
@@ -188,17 +230,20 @@ namespace RentalHouse.Infrastructure.Data.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(255)");
 
-                    b.Property<string>("Area")
-                        .HasColumnType("nvarchar(50)");
+                    b.Property<int?>("Area")
+                        .HasColumnType("int");
 
                     b.Property<float?>("AreaM2")
                         .HasColumnType("real");
 
-                    b.Property<string>("BedRoom")
-                        .HasColumnType("nvarchar(50)");
+                    b.Property<int?>("BathRoom")
+                        .HasColumnType("int");
 
-                    b.Property<string>("BedRoomCount")
-                        .HasColumnType("nvarchar(50)");
+                    b.Property<int?>("BedRoom")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("BedRoomCount")
+                        .HasColumnType("int");
 
                     b.Property<string>("Code")
                         .HasColumnType("nvarchar(50)");
@@ -224,8 +269,8 @@ namespace RentalHouse.Infrastructure.Data.Migrations
                     b.Property<DateTime?>("PostedDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("Price")
-                        .HasColumnType("nvarchar(50)");
+                    b.Property<int?>("Price")
+                        .HasColumnType("int");
 
                     b.Property<float?>("PriceBil")
                         .HasColumnType("real");
@@ -306,6 +351,33 @@ namespace RentalHouse.Infrastructure.Data.Migrations
                     b.Navigation("District");
                 });
 
+            modelBuilder.Entity("RentalHouse.Domain.Entities.Appointments.Appointment", b =>
+                {
+                    b.HasOne("RentalHouse.Domain.Entities.NhaTros.NhaTro", "NhaTro")
+                        .WithMany()
+                        .HasForeignKey("NhaTroId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("RentalHouse.Domain.Entities.Auth.User", "Owner")
+                        .WithMany()
+                        .HasForeignKey("OwnerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("RentalHouse.Domain.Entities.Auth.User", "User")
+                        .WithMany("Appointments")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("NhaTro");
+
+                    b.Navigation("Owner");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("RentalHouse.Domain.Entities.Favorites.Favorite", b =>
                 {
                     b.HasOne("RentalHouse.Domain.Entities.NhaTros.NhaTro", "NhaTro")
@@ -363,6 +435,8 @@ namespace RentalHouse.Infrastructure.Data.Migrations
 
             modelBuilder.Entity("RentalHouse.Domain.Entities.Auth.User", b =>
                 {
+                    b.Navigation("Appointments");
+
                     b.Navigation("Favorites");
 
                     b.Navigation("Nhatros");

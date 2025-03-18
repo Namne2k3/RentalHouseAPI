@@ -47,6 +47,13 @@ namespace RentalHouse.SharedLibrary.DependencyInjection
         {
             // cấu hình sử dụng global exception
             app.UseCors("AllowOrigin");
+            app.UseStaticFiles(new StaticFileOptions
+            {
+                OnPrepareResponse = ctx =>
+                {
+                    ctx.Context.Response.Headers.Add("Access-Control-Allow-Origin", "*");
+                }
+            });
             app.UseMiddleware<GlobalException>();
 
             return app;

@@ -1,6 +1,8 @@
-﻿namespace RentalHouse.Application.DTOs
+﻿using Microsoft.AspNetCore.Http;
+
+namespace RentalHouse.Application.DTOs
 {
-    public record NhaTroDTO(
+    public record NhaTroCreateRequestDTO(
         int Id,
         string Title,
         string Address,
@@ -25,7 +27,7 @@
         float? PriceVnd,
         float? AreaM2,
         float? PricePerM2,
-        List<string> ImageUrls,
+        List<IFormFile> Images,
         int UserId,
         string fullName,
         string phoneNumber,

@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore.ChangeTracking;
 using RentalHouse.Domain.Entities.Addresses.Districts;
 using RentalHouse.Domain.Entities.Addresses.Provinces;
 using RentalHouse.Domain.Entities.Addresses.Wards;
+using RentalHouse.Domain.Entities.Appointments;
 using RentalHouse.Domain.Entities.Auth;
 using RentalHouse.Domain.Entities.Favorites;
 using RentalHouse.Domain.Entities.NhaTros;
@@ -19,6 +20,7 @@ namespace RentalHouse.Infrastructure.Data
         public DbSet<Province> Provinces { get; set; }
         public DbSet<District> Districts { get; set; }
         public DbSet<Ward> Wards { get; set; }
+        public DbSet<Appointment> Appointments { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -39,6 +41,12 @@ namespace RentalHouse.Infrastructure.Data
                 .WithMany()
                 .HasForeignKey(f => f.NhaTroId)
                 .OnDelete(DeleteBehavior.Cascade); // Chỉ xóa favorite khi nhà trọ bị xóa
+
+            modelBuilder.Entity<Appointment>()
+                .HasOne(a => a.User)
+                .WithMany(u => u.Appointments)
+                .HasForeignKey(a => a.UserId)
+                .OnDelete(DeleteBehavior.NoAction); // 👈 Fix lỗi bằng cách ngăn cascade delete
         }
 
 

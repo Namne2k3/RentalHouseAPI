@@ -4,6 +4,58 @@ namespace RentalHouse.Application.DTOs.Conversions
 {
     public static class NhaTroConversion
     {
+        public static NhaTro RequestDTOToNhaTro(NhaTroCreateRequestDTO requestDTO)
+        {
+            return new NhaTro()
+            {
+                Title = requestDTO.Title,
+                Address = requestDTO.Address,
+                Description = requestDTO.Description,
+                Price = requestDTO.Price,
+                Area = requestDTO.Area,
+                BedRoom = requestDTO.BedRoomCount,
+                PostedDate = requestDTO.PostedDate,
+                ExpiredDate = requestDTO.ExpiredDate,
+                BedRoomCount = requestDTO.BedRoomCount,
+                BathRoom = requestDTO.BathRoom,
+                Furniture = requestDTO.Furniture,
+                Latitude = requestDTO.Latitude,
+                Longitude = requestDTO.Longitude,
+                UserId = requestDTO.UserId
+            };
+        }
+
+        public static NhaTro ToEntity(NhaTroUpdateRequestDTO nhatroDTO)
+        {
+            return new NhaTro
+            {
+                Id = nhatroDTO.Id,
+                Title = nhatroDTO.Title,
+                Address = nhatroDTO.Address,
+                Description = nhatroDTO.Description,
+                DescriptionHtml = nhatroDTO.DescriptionHtml,
+                Url = nhatroDTO.Url,
+                Price = nhatroDTO.Price,
+                PriceExt = nhatroDTO.PriceExt,
+                Area = nhatroDTO.Area,
+                BedRoom = nhatroDTO.BedRoom,
+                PostedDate = nhatroDTO.PostedDate,
+                ExpiredDate = nhatroDTO.ExpiredDate,
+                Type = nhatroDTO.Type,
+                Code = nhatroDTO.Code,
+                BedRoomCount = nhatroDTO.BedRoomCount,
+                BathRoom = nhatroDTO.BathRoom,
+                Furniture = nhatroDTO.Furniture,
+                Latitude = nhatroDTO.Latitude,
+                Longitude = nhatroDTO.Longitude,
+                PriceBil = nhatroDTO.PriceBil,
+                PriceMil = nhatroDTO.PriceMil,
+                PriceVnd = nhatroDTO.PriceVnd,
+                AreaM2 = nhatroDTO.AreaM2,
+                PricePerM2 = nhatroDTO.PricePerM2,
+                Images = nhatroDTO.ImageUrls.Select(url => new NhaTroImage { ImageUrl = url }).ToList()
+            };
+        }
         public static NhaTro ToEntity(NhaTroDTO nhatro)
         {
             return new()
@@ -23,6 +75,7 @@ namespace RentalHouse.Application.DTOs.Conversions
                 Type = nhatro.Type,
                 Code = nhatro.Code,
                 BedRoomCount = nhatro.BedRoomCount,
+                BathRoom = nhatro.BathRoom,
                 Furniture = nhatro.Furniture,
                 Latitude = nhatro.Latitude,
                 Longitude = nhatro.Longitude,
@@ -57,6 +110,7 @@ namespace RentalHouse.Application.DTOs.Conversions
                     nhaTro.Type,
                     nhaTro.Code,
                     nhaTro.BedRoomCount,
+                    nhaTro.BathRoom,
                     nhaTro.Furniture,
                     nhaTro.Latitude,
                     nhaTro.Longitude,
@@ -96,6 +150,7 @@ namespace RentalHouse.Application.DTOs.Conversions
                         nt.Type,
                         nt.Code,
                         nt.BedRoomCount,
+                        nt.BathRoom,
                         nt.Furniture,
                         nt.Latitude,
                         nt.Longitude,

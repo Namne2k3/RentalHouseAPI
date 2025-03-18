@@ -5,6 +5,7 @@ using RentalHouse.Application.DTOs.Conversions;
 using RentalHouse.Application.Interfaces;
 using RentalHouse.SharedLibrary.Responses;
 using System.Security.Claims;
+using System.Text.Json;
 
 namespace RentalHouse.Presentation.Controllers
 {
@@ -15,10 +16,12 @@ namespace RentalHouse.Presentation.Controllers
     {
         private readonly INhaTroRepository _repository;
         private readonly INhaTroService _service;
-        public NhaTroController(INhaTroRepository repository, INhaTroService service)
+        private readonly IConfiguration _configuration;
+        public NhaTroController(INhaTroRepository repository, INhaTroService service, IConfiguration configuration)
         {
             _repository = repository;
             _service = service;
+            _configuration = configuration;
         }
 
         [HttpGet("GetNhaTros")]
@@ -53,7 +56,8 @@ namespace RentalHouse.Presentation.Controllers
                 filterNhaTroDTO.price2!,
                 filterNhaTroDTO.area1!,
                 filterNhaTroDTO.area2!,
-                filterNhaTroDTO.bedRoomCount!
+                filterNhaTroDTO.bedRoomCount!,
+                filterNhaTroDTO.userId
             );
 
             if (!nhatros.Data!.Any())
@@ -66,16 +70,95 @@ namespace RentalHouse.Presentation.Controllers
 
         [HttpPost]
         [Authorize(Roles = "Admin")]
-        public async Task<ActionResult<Response>> CreateNhaTro(NhaTroDTO nhaTroDTO)
+        public async Task<ActionResult<Response>> CreateNhaTro([FromForm] string nhaTroData, [FromForm] List<IFormFile> images)
         {
-            if (!ModelState.IsValid)
+            try
             {
-                return BadRequest(ModelState);
+                if (string.IsNullOrEmpty(nhaTroData))
+                {
+                    return BadRequest(new Response { IsSuccess = false, Message = "Dữ liệu không hợp lệ" });
+                }
+
+                var nhaTroDTO = JsonSerializer.Deserialize<NhaTroCreateRequestDTO>(nhaTroData, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                });
+
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
+
+                if (images == null || !images.Any())
+                {
+                    return BadRequest(new Response { IsSuccess = false, Message = "Chưa cung cấp hình ảnh" });
+                }
+
+                var imageUrls = await UploadImages(images);
+                if (!imageUrls.Any())
+                {
+                    return BadRequest(new Response { IsSuccess = false, Message = "Lỗi khi tải ảnh lên" });
+                }
+
+                var nhaTro = NhaTroConversion.RequestDTOToNhaTro(nhaTroDTO);
+                var response = await _repository.CreateAsync(nhaTro, imageUrls);
+
+                return response.IsSuccess ? Ok(response) : BadRequest(response);
+            }
+            catch (JsonException ex)
+            {
+                return BadRequest(new Response { IsSuccess = false, Message = "Lỗi định dạng dữ liệu: " + ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new Response { IsSuccess = false, Message = "Lỗi server: " + ex.Message });
+            }
+        }
+
+        private async Task<List<string>> UploadImages(List<IFormFile> files)
+        {
+            var imageUrls = new List<string>();
+            var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
+            // Get server URL from configuration
+            var serverUrl = _configuration["ServerUrl"];
+
+            if (!Directory.Exists(uploadsFolder))
+            {
+                Directory.CreateDirectory(uploadsFolder);
             }
 
-            var getNhaTro = NhaTroConversion.ToEntity(nhaTroDTO); ;
-            var response = await _repository.CreateAsync(getNhaTro);
-            return response.IsSuccess ? Ok(response) : BadRequest(response);
+            foreach (var file in files)
+            {
+                if (file.Length > 0)
+                {
+                    var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
+                    string[] allowedExtensions = { ".jpg", ".jpeg", ".png", ".gif" };
+
+                    if (!allowedExtensions.Contains(extension))
+                    {
+                        continue;
+                    }
+
+                    var uniqueFileName = $"{Guid.NewGuid()}{extension}";
+                    var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                    try
+                    {
+                        using (var stream = new FileStream(filePath, FileMode.Create))
+                        {
+                            await file.CopyToAsync(stream);
+                        }
+                        // Store full URL in database
+                        imageUrls.Add($"{serverUrl}/uploads/{uniqueFileName}");
+                    }
+                    catch (Exception)
+                    {
+                        continue;
+                    }
+                }
+            }
+
+            return imageUrls;
         }
 
         [HttpDelete]
@@ -108,6 +191,21 @@ namespace RentalHouse.Presentation.Controllers
         {
             var relatedNhaTros = await _repository.GetRelateNhaTrosAsync(id, 4);
             return relatedNhaTros.Any() ? Ok(relatedNhaTros) : BadRequest(relatedNhaTros);
+        }
+
+
+        [HttpPut]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult<Response>> UpdateNhaTro([FromBody] NhaTroUpdateRequestDTO nhaTroDTO)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var nhaTro = NhaTroConversion.ToEntity(nhaTroDTO);
+            var response = await _repository.UpdateAsync(nhaTro);
+            return response.IsSuccess ? Ok(response) : BadRequest(response);
         }
     }
 }
