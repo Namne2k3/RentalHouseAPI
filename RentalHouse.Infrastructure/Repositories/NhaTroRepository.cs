@@ -2,6 +2,7 @@
 using RentalHouse.Application.DTOs;
 using RentalHouse.Application.DTOs.Conversions;
 using RentalHouse.Application.Interfaces;
+using RentalHouse.Domain.Entities;
 using RentalHouse.Domain.Entities.NhaTros;
 using RentalHouse.Infrastructure.Data;
 using RentalHouse.SharedLibrary.Logs;
@@ -92,7 +93,7 @@ namespace RentalHouse.Infrastructure.Repositories
                 var product = await _context.NhaTros
                     .Include(n => n.Images)
                     .Include(n => n.User)
-                    .FirstOrDefaultAsync(n => n.Id == id);
+                    .FirstOrDefaultAsync(n => n.Id == id && n.Status == ApprovalStatus.Approved);
                 return product is not null ? product : null!;
 
             }
@@ -112,6 +113,7 @@ namespace RentalHouse.Infrastructure.Repositories
                     .AsNoTracking()
                     .Take(20)
                     .Include(n => n.Images)
+                    .Where(n => n.Status != 0)
                     .ToListAsync();
                 return nhatros is not null ? nhatros : null!;
 
@@ -149,6 +151,7 @@ namespace RentalHouse.Infrastructure.Repositories
                     .Where(n =>
                         (address != null &&
                             (n.Address != null && n.Address.ToLower().Contains(address.ToLower())) &&
+                            (n.Status == ApprovalStatus.Approved) &&
                             (userId == null || (n.UserId == userId))
                         )
                         ||
@@ -157,7 +160,8 @@ namespace RentalHouse.Infrastructure.Repositories
                             (city == null || (n.Address != null && n.Address.ToLower().Contains(city.ToLower()))) &&
                             (district == null || (n.Address != null && n.Address.ToLower().Contains(district.ToLower()))) &&
                             (commune == null || (n.Address != null && n.Address.ToLower().Contains(commune.ToLower()))) &&
-                            (street == null || (n.Address != null && n.Address.ToLower().Contains(street.ToLower())))
+                            (street == null || (n.Address != null && n.Address.ToLower().Contains(street.ToLower()))) &&
+                            (n.Status == ApprovalStatus.Approved)
                         )
                     );
 
@@ -202,7 +206,74 @@ namespace RentalHouse.Infrastructure.Repositories
             }
         }
 
+        public async Task<PagedResultDTO<NhaTroDTO>> GetAllNhaTros(int page = 1, int pageSize = 20)
+        {
+            try
+            {
+                // Query server-side: chỉ những điều kiện mà EF có thể dịch sang SQL
+                var query = _context.NhaTros
+                    .AsNoTracking()
+                    .Include(n => n.Images)
+                    .Include(u => u.User);
 
+                // Sắp xếp và phân trang trên tập dữ liệu đã filter
+                var totalItems = await query.CountAsync();
+
+                var pagedData = await query
+                    .OrderByDescending(n => n.PostedDate)
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
+                    .ToListAsync();
+
+                var (_, list) = NhaTroConversion.FromEntity(null, pagedData);
+
+                return new PagedResultDTO<NhaTroDTO>(
+                    TotalItems: totalItems,
+                    TotalPages: (int)Math.Ceiling((double)totalItems / pageSize),
+                    Data: list ?? new List<NhaTroDTO>()
+                );
+            }
+            catch (Exception ex)
+            {
+                LogException.LogExceptions(ex);
+                throw new InvalidOperationException("Xảy ra lỗi khi truy xuất dữ liệu!", ex);
+            }
+        }
+
+        public async Task<PagedResultDTO<NhaTroDTO>> GetAllNhaTrosByUserId(int id, int page = 1, int pageSize = 20)
+        {
+            try
+            {
+                // Query server-side: chỉ những điều kiện mà EF có thể dịch sang SQL
+                var query = _context.NhaTros
+                    .AsNoTracking()
+                    .Include(n => n.Images)
+                    .Include(u => u.User)
+                    .Where(n => n.UserId == id);
+
+                // Sắp xếp và phân trang trên tập dữ liệu đã filter
+                var totalItems = await query.CountAsync();
+
+                var pagedData = await query
+                    .OrderByDescending(n => n.PostedDate)
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
+                    .ToListAsync();
+
+                var (_, list) = NhaTroConversion.FromEntity(null, pagedData);
+
+                return new PagedResultDTO<NhaTroDTO>(
+                    TotalItems: totalItems,
+                    TotalPages: (int)Math.Ceiling((double)totalItems / pageSize),
+                    Data: list ?? new List<NhaTroDTO>()
+                );
+            }
+            catch (Exception ex)
+            {
+                LogException.LogExceptions(ex);
+                throw new InvalidOperationException("Xảy ra lỗi khi truy xuất dữ liệu!", ex);
+            }
+        }
 
         public async Task<NhaTro> GetByAsync(Expression<Func<NhaTro, bool>> predicate)
         {
@@ -235,7 +306,7 @@ namespace RentalHouse.Infrastructure.Repositories
                 var relatedNhaTros = await _context.NhaTros.AsNoTracking()
                     .Include(n => n.User)
                     .Include(n => n.Images)
-                    .Where(n => n.Id != nhaTroId && n.Price >= currentNhaTro.Price * 0.8m && n.Price <= currentNhaTro.Price * 1.2m)
+                    .Where(n => n.Id != nhaTroId && n.Price >= currentNhaTro.Price * 0.8m && n.Price <= currentNhaTro.Price * 1.2m && n.Status != 0)
                     .Take(count)
                     .ToListAsync();
 
@@ -316,6 +387,46 @@ namespace RentalHouse.Infrastructure.Repositories
             {
                 LogException.LogExceptions(ex);
                 throw new InvalidOperationException("Xảy ra lỗi khi tìm dữ liệu nhà trọ liên quan!");
+            }
+        }
+
+        public async Task<Response> UpdateStatus(int nhaTroId, int status, string reason)
+        {
+            try
+            {
+                var findNhaTro = await _context.NhaTros.FirstOrDefaultAsync(n => n.Id == nhaTroId);
+                if (findNhaTro == null)
+                {
+                    return new Response(false, "Không tìm thấy dữ liệu nhà trọ!");
+                }
+
+                if (status == 0)
+                {
+                    findNhaTro.Status = ApprovalStatus.Rejected;
+                    if (reason != null)
+                    {
+                        findNhaTro.RejectionReason = reason;
+                    }
+                    else
+                    {
+                        return new Response(false, "Bạn cần điền lý do từ chối xét duyệt");
+                    }
+                }
+
+                if (status == 1)
+                {
+                    findNhaTro.Status = ApprovalStatus.Approved;
+                }
+
+                _context.Entry(findNhaTro).State = EntityState.Modified;
+                await _context.SaveChangesAsync();
+                return new Response(true, "Nhà trọ đã được duyệt thành công");
+
+            }
+            catch (Exception ex)
+            {
+                LogException.LogExceptions(ex);
+                throw new InvalidOperationException("Xảy ra lỗi khi duyệt nhà trọ!");
             }
         }
     }

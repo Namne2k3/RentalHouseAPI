@@ -39,6 +39,19 @@ namespace RentalHouse.Presentation.Controllers
             return list!.Any() ? Ok(list) : NotFound("Không tìm thấy nhà trọ!");
         }
 
+        [HttpGet("GetAllNhaTros")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult<PagedResultDTO<NhaTroDTO>>> GetAllNhaTros(int page, int pageSize)
+        {
+            var nhatros = await _repository.GetAllNhaTros(page, pageSize);
+            if (!nhatros.Data!.Any())
+            {
+                return NotFound("Không tìm thấy nhà trọ!");
+            }
+
+            return nhatros.Data!.Any() ? Ok(nhatros) : NotFound("Không tìm thấy nhà trọ!");
+        }
+
         [HttpGet("GetNhaTrosWithFilters")]
         public async Task<ActionResult<PagedResultDTO<NhaTroDTO>>> GetNhaTrosWithFilters([FromQuery] FilterNhaTroDTO filterNhaTroDTO)
         {
@@ -206,6 +219,30 @@ namespace RentalHouse.Presentation.Controllers
             var nhaTro = NhaTroConversion.ToEntity(nhaTroDTO);
             var response = await _repository.UpdateAsync(nhaTro);
             return response.IsSuccess ? Ok(response) : BadRequest(response);
+        }
+
+        [HttpPut("updateStatus/{id:int}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult<Response>> UpdateStatusNhaTro(int id, [FromBody] UpdateStatusNhaTroDTO updateStatusNhaTroDTO)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            var response = await _repository.UpdateStatus(id, updateStatusNhaTroDTO.status, updateStatusNhaTroDTO.reason!);
+            return response.IsSuccess ? Ok(response) : BadRequest(response);
+        }
+
+        [HttpGet("GetAllNhaTrosByUserId/{id:int}")]
+        [Authorize]
+        public async Task<ActionResult<PagedResultDTO<NhaTroDTO>>> GetAllNhaTroByUserId(int id)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            var nhatros = await _repository.GetAllNhaTrosByUserId(id);
+            return nhatros.Data!.Any() ? Ok(nhatros) : NotFound("Không tìm thấy nhà trọ!");
         }
     }
 }

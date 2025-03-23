@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using RentalHouse.Infrastructure.Data;
 
@@ -11,9 +12,11 @@ using RentalHouse.Infrastructure.Data;
 namespace RentalHouse.Infrastructure.Data.Migrations
 {
     [DbContext(typeof(RentalHouseDbContext))]
-    partial class RentalHouseDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250323085717_them_phan_hoi_images")]
+    partial class them_phan_hoi_images
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

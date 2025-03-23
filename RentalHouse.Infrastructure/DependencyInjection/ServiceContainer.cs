@@ -26,6 +26,8 @@ namespace RentalHouse.Infrastructure.DependencyInjection
 
             services.AddScoped<INhaTroService, NhaTroService>();
             services.AddScoped<IAppointmentRepository, AppointmentRepository>();
+            services.AddScoped<IReportRepository, ReportRepository>();
+
             return services;
         }
 

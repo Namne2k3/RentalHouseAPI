@@ -18,6 +18,24 @@ namespace RentalHouse.Presentation.Controllers
             _repository = repository;
         }
 
+        [HttpGet("getAllUsers")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult<ResponseWithDataList>> GetAllUsers()
+        {
+            var users = await _repository.GetAllUsers();
+            return users.Any() ? Ok(new ResponseWithDataList()
+            {
+                IsSuccess = true,
+                Message = "Danh sách người dùng",
+                Data = users
+            }) : NotFound(new ResponseWithDataList()
+            {
+                IsSuccess = false,
+                Message = "Không có người dùng nào",
+                Data = null!
+            });
+        }
+
         [HttpPut("updateUser")]
         [Authorize]
         public async Task<ActionResult<Response>> UpdateUser(ChangeUserDTO changeUserDTO)

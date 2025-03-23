@@ -1,4 +1,6 @@
-﻿namespace RentalHouse.Application.DTOs
+﻿using RentalHouse.Domain.Entities;
+
+namespace RentalHouse.Application.DTOs
 {
     public record NhaTroDTO(
         int Id,
@@ -29,6 +31,7 @@
         int UserId,
         string fullName,
         string phoneNumber,
-        string email
+        string email,
+        ApprovalStatus status
     );
 }

@@ -36,11 +36,11 @@ namespace RentalHouse.Infrastructure.Repositories
                     user.Id,
                     user.FullName,
                     user.Email,
-                    user.PhoneNumber!
+                    user.PhoneNumber!,
+                    user.Role.ToString()!
                 )
                 : null!;
         }
-
         public async Task<LoginResponse> Login(LoginDTO loginDTO)
         {
             var getUser = await GetUserByEmail(loginDTO.Email);
@@ -49,7 +49,8 @@ namespace RentalHouse.Infrastructure.Repositories
                 Email: getUser.Email,
                 PhoneNumber: getUser.PhoneNumber!,
                 Id: getUser.Id,
-                FullName: getUser.FullName
+                FullName: getUser.FullName,
+                Role: getUser.Role.ToString()
             );
 
             if (getUser is null)
@@ -154,6 +155,27 @@ namespace RentalHouse.Infrastructure.Repositories
             await _context.SaveChangesAsync();
 
             return new Response(true, "Cập nhật mật khẩu tài khoản thành công!");
+        }
+
+        public async Task<IEnumerable<GetUserDTO>> GetAllUsers()
+        {
+            var users = await _context.Users
+                .Where(p => p.Role != "Admin")
+                .ToListAsync();
+
+            if (users is null || users.Count == 0)
+            {
+                return null!;
+            }
+
+            return users.Select(u => new GetUserDTO(
+                u.Id,
+                u.FullName,
+                u.Email,
+                u.PhoneNumber!,
+                u.Role
+            ));
+
         }
     }
 }

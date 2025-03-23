@@ -26,5 +26,10 @@ namespace RentalHouse.Application.Interfaces
         Task<IEnumerable<NhaTroDTO>> GetRelateNhaTrosAsync(int nhaTroId, int count);
 
         Task<Response> CreateAsync(NhaTro entity, List<string> images);
+        Task<PagedResultDTO<NhaTroDTO>> GetAllNhaTros(int page,
+            int pageSize);
+
+        Task<Response> UpdateStatus(int nhaTroId, int status, string reason);
+        Task<PagedResultDTO<NhaTroDTO>> GetAllNhaTrosByUserId(int id, int page = 1, int pageSize = 20);
     }
 }

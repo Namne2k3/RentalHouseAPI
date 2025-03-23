@@ -7,6 +7,7 @@ using RentalHouse.Domain.Entities.Appointments;
 using RentalHouse.Domain.Entities.Auth;
 using RentalHouse.Domain.Entities.Favorites;
 using RentalHouse.Domain.Entities.NhaTros;
+using RentalHouse.Domain.Entities.Reports;
 
 namespace RentalHouse.Infrastructure.Data
 {
@@ -21,6 +22,8 @@ namespace RentalHouse.Infrastructure.Data
         public DbSet<District> Districts { get; set; }
         public DbSet<Ward> Wards { get; set; }
         public DbSet<Appointment> Appointments { get; set; }
+        public DbSet<ReportImage> ReportImages { get; set; }
+        public DbSet<Report> Reports { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

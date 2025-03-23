@@ -7,6 +7,7 @@ using RentalHouse.Domain.Entities.Appointments;
 using RentalHouse.Domain.Entities.Auth;
 using RentalHouse.Domain.Entities.Favorites;
 using RentalHouse.Domain.Entities.NhaTros;
+using RentalHouse.Domain.Entities.Reports;
 
 namespace RentalHouse.Infrastructure.Data
 {
@@ -19,6 +20,8 @@ namespace RentalHouse.Infrastructure.Data
         DbSet<District> Districts { get; set; }
         DbSet<Province> Provinces { get; set; }
         DbSet<Ward> Wards { get; set; }
+        DbSet<Report> Reports { get; set; }
+        DbSet<ReportImage> ReportImages { get; set; }
 
         DbSet<Appointment> Appointments { get; set; }
         EntityEntry Entry(object entity);

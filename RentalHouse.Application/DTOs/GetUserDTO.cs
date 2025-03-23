@@ -4,6 +4,7 @@
         int Id,
         string FullName,
         string Email,
-        string PhoneNumber
+        string PhoneNumber,
+        string? Role
     );
 }

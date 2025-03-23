@@ -60,8 +60,10 @@ namespace RentalHouse.Domain.Entities.NhaTros
 
         public int UserId { get; set; }
         public User? User { get; set; }
+        public ApprovalStatus Status { get; set; } = ApprovalStatus.Pending;
+        public string? RejectionReason { get; set; }
+        public DateTime? ApprovedDate { get; set; }
 
-        // Quan hệ 1-N với NhaTroImages
         public List<NhaTroImage> Images { get; set; } = new();
         public List<Favorite> Favorites { get; set; } = new();
     }
