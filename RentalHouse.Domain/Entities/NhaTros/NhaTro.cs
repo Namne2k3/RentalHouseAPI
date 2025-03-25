@@ -66,5 +66,15 @@ namespace RentalHouse.Domain.Entities.NhaTros
 
         public List<NhaTroImage> Images { get; set; } = new();
         public List<Favorite> Favorites { get; set; } = new();
+        public int ViewCount { get; set; } = 0;
+
+        // Thêm trường thời gian cập nhật cuối
+        public DateTime? LastUpdatedDate { get; set; }
+
+        // Thêm trường trạng thái hoạt động
+        public bool IsActive { get; set; } = true;
+
+        // Thêm trường theo dõi lịch sử xem
+        public List<NhaTroView> Views { get; set; } = new();
     }
 }

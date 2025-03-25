@@ -31,5 +31,7 @@ namespace RentalHouse.Application.Interfaces
 
         Task<Response> UpdateStatus(int nhaTroId, int status, string reason);
         Task<PagedResultDTO<NhaTroDTO>> GetAllNhaTrosByUserId(int id, int page = 1, int pageSize = 20);
+        Task<IEnumerable<RentalViewStatsDto>> GetViewStatsAsync(int userId);
+        Task<RentalStatusStatsDto> GetStatusStatsAsync(int userId);
     }
 }

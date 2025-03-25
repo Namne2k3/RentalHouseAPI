@@ -24,6 +24,8 @@ namespace RentalHouse.Infrastructure.Data
         public DbSet<Appointment> Appointments { get; set; }
         public DbSet<ReportImage> ReportImages { get; set; }
         public DbSet<Report> Reports { get; set; }
+        public DbSet<NhaTroView> NhaTroViews { get; set; }
+        public DbSet<AppointmentHistory> AppointmentHistories { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -50,6 +52,37 @@ namespace RentalHouse.Infrastructure.Data
                 .WithMany(u => u.Appointments)
                 .HasForeignKey(a => a.UserId)
                 .OnDelete(DeleteBehavior.NoAction); // 👈 Fix lỗi bằng cách ngăn cascade delete
+
+            modelBuilder.Entity<Appointment>()
+                .HasOne(a => a.Owner)
+                .WithMany()
+                .HasForeignKey(a => a.OwnerId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Appointment>()
+                .HasOne(a => a.ConfirmedBy)
+                .WithMany()
+                .HasForeignKey(a => a.ConfirmedById)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<Appointment>()
+                .HasOne(a => a.NhaTro)
+                .WithMany()
+                .HasForeignKey(a => a.NhaTroId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Cấu hình mối quan hệ cho AppointmentHistory
+            modelBuilder.Entity<AppointmentHistory>()
+                .HasOne(h => h.Appointment)
+                .WithMany()
+                .HasForeignKey(h => h.AppointmentId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<AppointmentHistory>()
+                .HasOne(h => h.ChangedBy)
+                .WithMany()
+                .HasForeignKey(h => h.ChangedById)
+                .OnDelete(DeleteBehavior.Restrict);
         }
 
 

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using RentalHouse.Infrastructure.Data;
 
@@ -11,9 +12,11 @@ using RentalHouse.Infrastructure.Data;
 namespace RentalHouse.Infrastructure.Data.Migrations
 {
     [DbContext(typeof(RentalHouseDbContext))]
-    partial class RentalHouseDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250325093058_them_nha_tro_view")]
+    partial class them_nha_tro_view
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -121,28 +124,11 @@ namespace RentalHouse.Infrastructure.Data.Migrations
                     b.Property<DateTime>("AppointmentTime")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("CancellationReason")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<DateTime?>("CompletedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("ConfirmedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int?>("ConfirmedById")
-                        .HasColumnType("int");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
                     b.Property<int>("NhaTroId")
                         .HasColumnType("int");
-
-                    b.Property<string>("Notes")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
 
                     b.Property<int>("OwnerId")
                         .HasColumnType("int");
@@ -160,8 +146,6 @@ namespace RentalHouse.Infrastructure.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ConfirmedById");
-
                     b.HasIndex("NhaTroId");
 
                     b.HasIndex("OwnerId");
@@ -169,41 +153,6 @@ namespace RentalHouse.Infrastructure.Data.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("Appointments");
-                });
-
-            modelBuilder.Entity("RentalHouse.Domain.Entities.Appointments.AppointmentHistory", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("AppointmentId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ChangedById")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Notes")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AppointmentId");
-
-                    b.HasIndex("ChangedById");
-
-                    b.ToTable("AppointmentHistories");
                 });
 
             modelBuilder.Entity("RentalHouse.Domain.Entities.Auth.User", b =>
@@ -514,21 +463,16 @@ namespace RentalHouse.Infrastructure.Data.Migrations
 
             modelBuilder.Entity("RentalHouse.Domain.Entities.Appointments.Appointment", b =>
                 {
-                    b.HasOne("RentalHouse.Domain.Entities.Auth.User", "ConfirmedBy")
-                        .WithMany()
-                        .HasForeignKey("ConfirmedById")
-                        .OnDelete(DeleteBehavior.NoAction);
-
                     b.HasOne("RentalHouse.Domain.Entities.NhaTros.NhaTro", "NhaTro")
                         .WithMany()
                         .HasForeignKey("NhaTroId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("RentalHouse.Domain.Entities.Auth.User", "Owner")
                         .WithMany()
                         .HasForeignKey("OwnerId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("RentalHouse.Domain.Entities.Auth.User", "User")
@@ -537,32 +481,11 @@ namespace RentalHouse.Infrastructure.Data.Migrations
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
-                    b.Navigation("ConfirmedBy");
-
                     b.Navigation("NhaTro");
 
                     b.Navigation("Owner");
 
                     b.Navigation("User");
-                });
-
-            modelBuilder.Entity("RentalHouse.Domain.Entities.Appointments.AppointmentHistory", b =>
-                {
-                    b.HasOne("RentalHouse.Domain.Entities.Appointments.Appointment", "Appointment")
-                        .WithMany()
-                        .HasForeignKey("AppointmentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("RentalHouse.Domain.Entities.Auth.User", "ChangedBy")
-                        .WithMany()
-                        .HasForeignKey("ChangedById")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Appointment");
-
-                    b.Navigation("ChangedBy");
                 });
 
             modelBuilder.Entity("RentalHouse.Domain.Entities.Favorites.Favorite", b =>

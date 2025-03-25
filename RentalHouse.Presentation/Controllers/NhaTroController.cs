@@ -17,11 +17,29 @@ namespace RentalHouse.Presentation.Controllers
         private readonly INhaTroRepository _repository;
         private readonly INhaTroService _service;
         private readonly IConfiguration _configuration;
-        public NhaTroController(INhaTroRepository repository, INhaTroService service, IConfiguration configuration)
+        private readonly INhaTroViewService _nhaTroViewService;
+        public NhaTroController(INhaTroRepository repository, INhaTroService service, IConfiguration configuration, INhaTroViewService nhaTroViewService)
         {
             _repository = repository;
             _service = service;
             _configuration = configuration;
+            _nhaTroViewService = nhaTroViewService;
+        }
+
+        [HttpGet("view-stats")]
+        public async Task<ActionResult<IEnumerable<RentalViewStatsDto>>> GetViewStats()
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var stats = await _repository.GetViewStatsAsync(int.Parse(userId!));
+            return Ok(stats);
+        }
+
+        [HttpGet("status-stats")]
+        public async Task<ActionResult<RentalStatusStatsDto>> GetStatusStats()
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var stats = await _repository.GetStatusStatsAsync(int.Parse(userId!));
+            return Ok(stats);
         }
 
         [HttpGet("GetNhaTros")]
@@ -194,10 +212,20 @@ namespace RentalHouse.Presentation.Controllers
         [HttpGet("GetNhaTroById")]
         public async Task<ActionResult<NhaTroDTO>> GetNhaTroById(int id)
         {
+
             var nhatro = await _repository.FindByIdAsync(id);
             var (nhatroDTO, _) = NhaTroConversion.FromEntity(nhatro, null);
+
+            if (nhatro != null)
+            {
+                string? ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
+                int? viewerId = User.Identity?.IsAuthenticated == true ?
+                int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0") : null;
+                await _nhaTroViewService.IncrementViewAsync(id, ipAddress, viewerId);
+            }
             return nhatroDTO?.Id > 0 ? Ok(nhatroDTO) : BadRequest(nhatroDTO);
         }
+
 
         [HttpGet("GetRelatedNhaTros")]
         public async Task<ActionResult<IEnumerable<NhaTroDTO>>> GetRelatedNhaTros(int id)

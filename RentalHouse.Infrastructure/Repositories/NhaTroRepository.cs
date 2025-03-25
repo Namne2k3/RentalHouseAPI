@@ -323,6 +323,38 @@ namespace RentalHouse.Infrastructure.Repositories
             }
         }
 
+        public async Task<IEnumerable<RentalViewStatsDto>> GetViewStatsAsync(int userId)
+        {
+            return await _context.NhaTros
+                .Where(n => n.UserId == userId)
+                .Select(n => new RentalViewStatsDto
+                {
+                    Id = n.Id,
+                    Title = n.Title,
+                    ViewCount = n.ViewCount,
+                    PostedDate = n.PostedDate,
+                    Status = n.Status.ToString()
+                })
+                .OrderByDescending(n => n.ViewCount)
+                .ToListAsync();
+        }
+
+        public async Task<RentalStatusStatsDto> GetStatusStatsAsync(int userId)
+        {
+            var now = DateTime.UtcNow;
+            return new RentalStatusStatsDto
+            {
+                TotalPosts = await _context.NhaTros.Where(n => n.UserId == userId).CountAsync(),
+                ActivePosts = await _context.NhaTros.Where(n => n.UserId == userId).CountAsync(n =>
+                    n.Status == ApprovalStatus.Approved &&
+                    (n.ExpiredDate == null || n.ExpiredDate > now)),
+                ExpiredPosts = await _context.NhaTros.Where(n => n.UserId == userId).CountAsync(n =>
+                    n.ExpiredDate != null && n.ExpiredDate < now), // Thay đổi >= thành <
+                PendingPosts = await _context.NhaTros.Where(n => n.UserId == userId).CountAsync(n =>
+                    n.Status == ApprovalStatus.Pending)
+            };
+        }
+
         public async Task<Response> UpdateAsync(NhaTro entity)
         {
             try

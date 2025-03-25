@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using RentalHouse.Application.DTOs;
-using RentalHouse.Application.DTOs.Conversions;
 using RentalHouse.Application.Interfaces;
 using RentalHouse.SharedLibrary.Responses;
 using System.Security.Claims;
@@ -31,29 +30,29 @@ namespace RentalHouse.Presentation.Controllers
 
         [HttpGet("GetUserAppointments")]
         [Authorize]
-        public async Task<ActionResult<List<AppointmentDTO>>> GetUserAppointments()
+        public async Task<IActionResult> GetUserAppointments()
         {
             string userId = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
             var appointments = await _appointmentRepository.GetUserAppointmentsAsync(int.Parse(userId));
-            var listDto = appointments.Select(p => p.ToAppointmentDTO());
+            var listDto = appointments;
             return listDto.Any() ? Ok(listDto) : BadRequest(listDto);
         }
 
         [HttpGet("GetOwnerAppointments")]
         [Authorize]
-        public async Task<ActionResult<List<AppointmentDTO>>> GetOwnerAppointments()
+        public async Task<IActionResult> GetOwnerAppointments()
         {
             string ownerId = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
             var appointments = await _appointmentRepository.GetOwnerAppointmentsAsync(int.Parse(ownerId));
-            var listDto = appointments.Select(p => p.ToAppointmentDTO());
+            var listDto = appointments;
             return listDto.Any() ? Ok(listDto) : BadRequest(listDto);
         }
 
         [HttpPut("{appointmentId}")]
         [Authorize]
-        public async Task<ActionResult<Response>> UpdateAppointmentStatus(int appointmentId, [FromBody] string status)
+        public async Task<ActionResult<Response>> UpdateAppointmentStatus(int appointmentId, [FromBody] AppointmentHistoryDto appointmentDetailDto)
         {
-            var response = await _appointmentRepository.UpdateAppointmentStatusAsync(appointmentId, status);
+            var response = await _appointmentRepository.UpdateAppointmentStatusAsync(appointmentId, appointmentDetailDto.Status!, appointmentDetailDto.Notes!, int.Parse(appointmentDetailDto.ChangedBy!));
             return response.IsSuccess ? Ok(response) : BadRequest(response);
         }
     }

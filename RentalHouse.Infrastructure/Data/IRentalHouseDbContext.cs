@@ -21,7 +21,9 @@ namespace RentalHouse.Infrastructure.Data
         DbSet<Province> Provinces { get; set; }
         DbSet<Ward> Wards { get; set; }
         DbSet<Report> Reports { get; set; }
+        DbSet<NhaTroView> NhaTroViews { get; set; }
         DbSet<ReportImage> ReportImages { get; set; }
+        DbSet<AppointmentHistory> AppointmentHistories { get; set; }
 
         DbSet<Appointment> Appointments { get; set; }
         EntityEntry Entry(object entity);
