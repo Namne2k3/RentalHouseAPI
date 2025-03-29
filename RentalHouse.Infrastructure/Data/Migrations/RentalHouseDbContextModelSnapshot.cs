@@ -121,19 +121,6 @@ namespace RentalHouse.Infrastructure.Data.Migrations
                     b.Property<DateTime>("AppointmentTime")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("CancellationReason")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<DateTime?>("CompletedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("ConfirmedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int?>("ConfirmedById")
-                        .HasColumnType("int");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -158,15 +145,18 @@ namespace RentalHouse.Infrastructure.Data.Migrations
                     b.Property<int>("UserId")
                         .HasColumnType("int");
 
-                    b.HasKey("Id");
+                    b.Property<int?>("UserId1")
+                        .HasColumnType("int");
 
-                    b.HasIndex("ConfirmedById");
+                    b.HasKey("Id");
 
                     b.HasIndex("NhaTroId");
 
                     b.HasIndex("OwnerId");
 
                     b.HasIndex("UserId");
+
+                    b.HasIndex("UserId1");
 
                     b.ToTable("Appointments");
                 });
@@ -224,6 +214,9 @@ namespace RentalHouse.Infrastructure.Data.Migrations
                     b.Property<string>("FullName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsLock")
+                        .HasColumnType("bit");
 
                     b.Property<string>("Password")
                         .IsRequired()
@@ -514,15 +507,10 @@ namespace RentalHouse.Infrastructure.Data.Migrations
 
             modelBuilder.Entity("RentalHouse.Domain.Entities.Appointments.Appointment", b =>
                 {
-                    b.HasOne("RentalHouse.Domain.Entities.Auth.User", "ConfirmedBy")
-                        .WithMany()
-                        .HasForeignKey("ConfirmedById")
-                        .OnDelete(DeleteBehavior.NoAction);
-
                     b.HasOne("RentalHouse.Domain.Entities.NhaTros.NhaTro", "NhaTro")
                         .WithMany()
                         .HasForeignKey("NhaTroId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("RentalHouse.Domain.Entities.Auth.User", "Owner")
@@ -532,12 +520,14 @@ namespace RentalHouse.Infrastructure.Data.Migrations
                         .IsRequired();
 
                     b.HasOne("RentalHouse.Domain.Entities.Auth.User", "User")
-                        .WithMany("Appointments")
+                        .WithMany()
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("ConfirmedBy");
+                    b.HasOne("RentalHouse.Domain.Entities.Auth.User", null)
+                        .WithMany("Appointments")
+                        .HasForeignKey("UserId1");
 
                     b.Navigation("NhaTro");
 
@@ -549,7 +539,7 @@ namespace RentalHouse.Infrastructure.Data.Migrations
             modelBuilder.Entity("RentalHouse.Domain.Entities.Appointments.AppointmentHistory", b =>
                 {
                     b.HasOne("RentalHouse.Domain.Entities.Appointments.Appointment", "Appointment")
-                        .WithMany()
+                        .WithMany("AppointmentHistories")
                         .HasForeignKey("AppointmentId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -557,7 +547,7 @@ namespace RentalHouse.Infrastructure.Data.Migrations
                     b.HasOne("RentalHouse.Domain.Entities.Auth.User", "ChangedBy")
                         .WithMany()
                         .HasForeignKey("ChangedById")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Appointment");
@@ -663,6 +653,11 @@ namespace RentalHouse.Infrastructure.Data.Migrations
             modelBuilder.Entity("RentalHouse.Domain.Entities.Addresses.Provinces.Province", b =>
                 {
                     b.Navigation("Districts");
+                });
+
+            modelBuilder.Entity("RentalHouse.Domain.Entities.Appointments.Appointment", b =>
+                {
+                    b.Navigation("AppointmentHistories");
                 });
 
             modelBuilder.Entity("RentalHouse.Domain.Entities.Auth.User", b =>

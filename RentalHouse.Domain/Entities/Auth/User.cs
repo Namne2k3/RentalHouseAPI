@@ -15,6 +15,7 @@ namespace RentalHouse.Domain.Entities.Auth
         public string? PhoneNumber { get; set; }
         public string Role { get; set; } = Roles.User.ToString(); // Admin, User
         public DateTime DateRegistered { get; set; } = DateTime.UtcNow;
+        public bool IsLock { get; set; } = false;
         public List<NhaTro> Nhatros { get; set; } = new();
         public List<Favorite> Favorites { get; set; } = new();
         public List<Appointment> Appointments { get; set; } = new();

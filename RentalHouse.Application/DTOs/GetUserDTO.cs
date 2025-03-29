@@ -5,6 +5,7 @@
         string FullName,
         string Email,
         string PhoneNumber,
-        string? Role
+        string? Role,
+        bool? IsLock
     );
 }

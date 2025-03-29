@@ -1,17 +1,25 @@
 ﻿using RentalHouse.Application.DTOs;
-using RentalHouse.SharedLibrary.Responses;
+using RentalHouse.Domain.Entities.Appointments;
 
 namespace RentalHouse.Application.Interfaces
 {
     public interface IAppointmentRepository
     {
-        Task<Response> CreateAppointmentAsync(CreateAppointmentDTO dto, int userId);
-        Task<IEnumerable<AppointmentDetailDto>> GetUserAppointmentsAsync(int userId);
-        Task<IEnumerable<AppointmentDetailDto>> GetOwnerAppointmentsAsync(int ownerId);
-        Task<Response> UpdateAppointmentStatusAsync(int appointmentId, string newStatus, string notes, int changedById);
-
-        Task<AppointmentStatsDto> GetAppointmentStatsAsync(int userId, bool isOwner);
-        Task<IEnumerable<AppointmentTimeStatsDto>> GetPopularAppointmentTimesAsync();
+        Task<Appointment> CreateAppointmentAsync(Appointment appointment);
+        Task<Appointment?> GetAppointmentByIdAsync(int id);
+        Task<IEnumerable<Appointment>> GetAllAppointmentsAsync();
+        Task<bool> UpdateAppointmentStatusAsync(int id, string status, string? notes, int changedById);
+        Task<bool> CancelAppointmentAsync(int id, string reason, int changedById);
+        Task<IEnumerable<AppointmentDto>> GetAppointmentsByUserIdAsync(int userId);
+        Task<IEnumerable<AppointmentDto>> GetAppointmentsByOwner(int userId, string? status);
+        Task<List<AppointmentHistoryDto>> GetHistoryByAppointmentIdAsync(int appointmentId);
+        Task<IEnumerable<AppointmentDto>> SearchAppointments(
+            int? ownerId,
+            int? userId,
+            string? searchField,
+            string? searchValue,
+            string? status,
+            string searchType
+        );
     }
-
 }

@@ -37,7 +37,8 @@ namespace RentalHouse.Infrastructure.Repositories
                     user.FullName,
                     user.Email,
                     user.PhoneNumber!,
-                    user.Role.ToString()!
+                    user.Role.ToString()!,
+                    user.IsLock
                 )
                 : null!;
         }
@@ -50,7 +51,8 @@ namespace RentalHouse.Infrastructure.Repositories
                 PhoneNumber: getUser.PhoneNumber!,
                 Id: getUser.Id,
                 FullName: getUser.FullName,
-                Role: getUser.Role.ToString()
+                Role: getUser.Role.ToString(),
+                IsLock: getUser.IsLock
             );
 
             if (getUser is null)
@@ -160,6 +162,7 @@ namespace RentalHouse.Infrastructure.Repositories
         public async Task<IEnumerable<GetUserDTO>> GetAllUsers()
         {
             var users = await _context.Users
+                .AsNoTracking()
                 .Where(p => p.Role != "Admin")
                 .ToListAsync();
 
@@ -173,9 +176,91 @@ namespace RentalHouse.Infrastructure.Repositories
                 u.FullName,
                 u.Email,
                 u.PhoneNumber!,
-                u.Role
+                u.Role,
+                u.IsLock
             ));
 
+        }
+
+        public async Task<Response> LockUser(int userId)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+            if (user == null)
+            {
+                return new Response(false, "Không tìm thấy thông tin tài khoản");
+            }
+            user.IsLock = true;
+            _context.Users.Update(user);
+            Console.WriteLine($"User {user.Id} Locked Status: {user.IsLock}"); // Kiểm tra giá trị sau khi lưu
+            await _context.SaveChangesAsync();
+
+            return new Response(true, $"Đã khóa tài khoản - {user.Id}");
+        }
+
+        public async Task<Response> UnlockUser(int userId)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+            if (user == null)
+            {
+                return new Response(false, "Không tìm thấy thông tin tài khoản");
+            }
+            user.IsLock = false;
+            _context.Users.Update(user);
+            Console.WriteLine($"User {user.Id} Locked Status: {user.IsLock}"); // Kiểm tra giá trị sau khi lưu
+            await _context.SaveChangesAsync();
+
+            return new Response(true, $"Đã khóa tài khoản - {user.Id}");
+        }
+
+        public async Task<IEnumerable<GetUserDTO>> SearchUsers(SearchUsersDTO searchParams)
+        {
+            var query = _context.Users.AsNoTracking();
+
+            // Apply role filter
+            if (!string.IsNullOrEmpty(searchParams.Role))
+            {
+                query = query.Where(u => u.Role == searchParams.Role);
+            }
+
+            // Apply lock status filter
+            if (searchParams.IsLock.HasValue)
+            {
+                query = query.Where(u => u.IsLock == searchParams.IsLock.Value);
+            }
+
+            // Apply search field filter
+            if (!string.IsNullOrEmpty(searchParams.SearchValue))
+            {
+                switch (searchParams.SearchField.ToLower())
+                {
+                    case "id":
+                        if (int.TryParse(searchParams.SearchValue, out int id))
+                        {
+                            query = query.Where(u => u.Id == id);
+                        }
+                        break;
+                    case "fullname":
+                        query = query.Where(u => u.FullName.Contains(searchParams.SearchValue));
+                        break;
+                    case "email":
+                        query = query.Where(u => u.Email.Contains(searchParams.SearchValue));
+                        break;
+                    case "phonenumber":
+                        query = query.Where(u => u.PhoneNumber.Contains(searchParams.SearchValue));
+                        break;
+                }
+            }
+
+            var users = await query.ToListAsync();
+
+            return users.Select(u => new GetUserDTO(
+                u.Id,
+                u.FullName,
+                u.Email,
+                u.PhoneNumber!,
+                u.Role.ToString(),
+                u.IsLock
+            ));
         }
     }
 }

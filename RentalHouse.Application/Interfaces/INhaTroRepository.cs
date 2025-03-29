@@ -33,5 +33,7 @@ namespace RentalHouse.Application.Interfaces
         Task<PagedResultDTO<NhaTroDTO>> GetAllNhaTrosByUserId(int id, int page = 1, int pageSize = 20);
         Task<IEnumerable<RentalViewStatsDto>> GetViewStatsAsync(int userId);
         Task<RentalStatusStatsDto> GetStatusStatsAsync(int userId);
+
+        Task<Response> UpdateActive(int id, Boolean status);
     }
 }

@@ -124,7 +124,8 @@ namespace RentalHouse.Application.DTOs.Conversions
                     nhaTro.User!.FullName,
                     nhaTro.User!.PhoneNumber!,
                     nhaTro.User!.Email,
-                    nhaTro.Status
+                    nhaTro.Status,
+                    nhaTro.IsActive
                 );
 
                 return (singleNhaTro, null);
@@ -165,7 +166,8 @@ namespace RentalHouse.Application.DTOs.Conversions
                         nt.User!.FullName,
                         nt.User.PhoneNumber!,
                         nt.User!.Email,
-                        nt.Status
+                        nt.Status,
+                        nt.IsActive
                     );
                 }
                 ).ToList();

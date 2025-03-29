@@ -25,6 +25,12 @@ namespace RentalHouse.Presentation.Controllers
             _configuration = configuration;
             _nhaTroViewService = nhaTroViewService;
         }
+        [HttpPut("UpdateActive/{id:int}")]
+        public async Task<ActionResult<Response>> UpdateActive(int id, [FromBody] Boolean isActive)
+        {
+            var response = await _repository.UpdateActive(id, isActive);
+            return response.IsSuccess ? Ok(response) : BadRequest(response);
+        }
 
         [HttpGet("view-stats")]
         public async Task<ActionResult<IEnumerable<RentalViewStatsDto>>> GetViewStats()
@@ -214,6 +220,10 @@ namespace RentalHouse.Presentation.Controllers
         {
 
             var nhatro = await _repository.FindByIdAsync(id);
+            if (nhatro is null)
+            {
+                return NoContent();
+            }
             var (nhatroDTO, _) = NhaTroConversion.FromEntity(nhatro, null);
 
             if (nhatro != null)

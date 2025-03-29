@@ -27,6 +27,7 @@ namespace RentalHouse.Infrastructure.Data
         public DbSet<NhaTroView> NhaTroViews { get; set; }
         public DbSet<AppointmentHistory> AppointmentHistories { get; set; }
 
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<NhaTro>()
@@ -48,41 +49,16 @@ namespace RentalHouse.Infrastructure.Data
                 .OnDelete(DeleteBehavior.Cascade); // Chỉ xóa favorite khi nhà trọ bị xóa
 
             modelBuilder.Entity<Appointment>()
-                .HasOne(a => a.User)
-                .WithMany(u => u.Appointments)
+                .HasOne(a => a.User)   // Người đặt lịch
+                .WithMany()
                 .HasForeignKey(a => a.UserId)
-                .OnDelete(DeleteBehavior.NoAction); // 👈 Fix lỗi bằng cách ngăn cascade delete
+                .OnDelete(DeleteBehavior.Cascade); // Khi User bị xóa, xóa luôn lịch hẹn
 
             modelBuilder.Entity<Appointment>()
-                .HasOne(a => a.Owner)
+                .HasOne(a => a.Owner)  // Chủ trọ
                 .WithMany()
                 .HasForeignKey(a => a.OwnerId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder.Entity<Appointment>()
-                .HasOne(a => a.ConfirmedBy)
-                .WithMany()
-                .HasForeignKey(a => a.ConfirmedById)
-                .OnDelete(DeleteBehavior.NoAction);
-
-            modelBuilder.Entity<Appointment>()
-                .HasOne(a => a.NhaTro)
-                .WithMany()
-                .HasForeignKey(a => a.NhaTroId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            // Cấu hình mối quan hệ cho AppointmentHistory
-            modelBuilder.Entity<AppointmentHistory>()
-                .HasOne(h => h.Appointment)
-                .WithMany()
-                .HasForeignKey(h => h.AppointmentId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            modelBuilder.Entity<AppointmentHistory>()
-                .HasOne(h => h.ChangedBy)
-                .WithMany()
-                .HasForeignKey(h => h.ChangedById)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.Restrict); // Không xóa Owner khi xóa lịch hẹn
         }
 
 

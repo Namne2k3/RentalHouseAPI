@@ -23,9 +23,8 @@ namespace RentalHouse.Infrastructure.Data
         DbSet<Report> Reports { get; set; }
         DbSet<NhaTroView> NhaTroViews { get; set; }
         DbSet<ReportImage> ReportImages { get; set; }
-        DbSet<AppointmentHistory> AppointmentHistories { get; set; }
-
         DbSet<Appointment> Appointments { get; set; }
+        DbSet<AppointmentHistory> AppointmentHistories { get; set; }
         EntityEntry Entry(object entity);
         Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
     }

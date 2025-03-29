@@ -5,7 +5,6 @@ using RentalHouse.Application.Interfaces;
 using RentalHouse.Application.Services.NhaTro;
 using RentalHouse.Infrastructure.Data;
 using RentalHouse.Infrastructure.Repositories;
-using RentalHouse.Infrastructure.Services;
 using RentalHouse.Infrastructure.Services.NhaTroView;
 using RentalHouse.SharedLibrary.DependencyInjection;
 
@@ -25,12 +24,10 @@ namespace RentalHouse.Infrastructure.DependencyInjection
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IFavoriteRepository, FavoriteRepository>();
             services.AddScoped<IAddressRepository, AddressRepository>();
-
-            services.AddScoped<INhaTroService, NhaTroService>();
             services.AddScoped<IAppointmentRepository, AppointmentRepository>();
+            services.AddScoped<INhaTroService, NhaTroService>();
             services.AddScoped<IReportRepository, ReportRepository>();
             services.AddScoped<INhaTroViewService, NhaTroViewService>();
-            services.AddScoped<IAppointmentHistoryService, AppointmentHistoryService>();
             return services;
         }
 

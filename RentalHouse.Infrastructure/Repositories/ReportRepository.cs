@@ -24,15 +24,19 @@ public class ReportRepository : IReportRepository
     {
         return await _context.Reports
             .Include(r => r.Images)
+            .Include(r => r.User)
+            .Include(r => r.NhaTro)
             .Select(r => new ReportDto
             {
                 Id = r.Id,
+                UserId = r.User.Id,
                 ReportType = r.ReportType,
                 Description = r.Description,
                 Images = r.Images.Select(img => img.ImageUrl).ToList(), // Chỉ lấy URL ảnh
                 Status = r.Status,
                 CreatedAt = r.CreatedAt,
-                UpdatedAt = r.UpdatedAt
+                UpdatedAt = r.UpdatedAt,
+                NhaTro = r.NhaTro
             })
             .ToListAsync();
     }

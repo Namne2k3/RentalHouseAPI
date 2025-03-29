@@ -12,5 +12,8 @@ namespace RentalHouse.Application.Interfaces
 
         Task<Response> ChangePassword(int userId, string newPassword, string currentPassword);
         Task<IEnumerable<GetUserDTO>> GetAllUsers();
+        Task<Response> LockUser(int userId);
+        Task<Response> UnlockUser(int userId);
+        Task<IEnumerable<GetUserDTO>> SearchUsers(SearchUsersDTO searchParams);
     }
 }

@@ -14,13 +14,13 @@ namespace RentalHouse.Domain.Entities.Appointments
 
         [Required]
         [MaxLength(20)]
-        public string? Status { get; set; }
+        public string Status { get; set; }  // Trạng thái mới: "Approved", "Rejected"
 
         [MaxLength(500)]
-        public string? Notes { get; set; }
+        public string? Notes { get; set; }  // Lý do từ chối (nếu có)
 
         [ForeignKey("ChangedBy")]
-        public int ChangedById { get; set; }
+        public int ChangedById { get; set; }  // Ai thực hiện thay đổi
         public User? ChangedBy { get; set; }
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

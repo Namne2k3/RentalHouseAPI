@@ -32,6 +32,7 @@ namespace RentalHouse.Application.DTOs
         string fullName,
         string phoneNumber,
         string email,
-        ApprovalStatus status
+        ApprovalStatus status,
+        bool isActive
     );
 }

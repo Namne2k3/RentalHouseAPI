@@ -93,7 +93,7 @@ namespace RentalHouse.Infrastructure.Repositories
                 var product = await _context.NhaTros
                     .Include(n => n.Images)
                     .Include(n => n.User)
-                    .FirstOrDefaultAsync(n => n.Id == id && n.Status == ApprovalStatus.Approved);
+                    .FirstOrDefaultAsync(n => n.Id == id && n.Status == ApprovalStatus.Approved && n.IsActive == true);
                 return product is not null ? product : null!;
 
             }
@@ -152,7 +152,9 @@ namespace RentalHouse.Infrastructure.Repositories
                         (address != null &&
                             (n.Address != null && n.Address.ToLower().Contains(address.ToLower())) &&
                             (n.Status == ApprovalStatus.Approved) &&
-                            (userId == null || (n.UserId == userId))
+                            (userId == null || (n.UserId == userId) &&
+                            (n.IsActive == true)
+                            )
                         )
                         ||
                         (address == null &&
@@ -325,14 +327,19 @@ namespace RentalHouse.Infrastructure.Repositories
 
         public async Task<IEnumerable<RentalViewStatsDto>> GetViewStatsAsync(int userId)
         {
+            var now = DateTime.UtcNow.Date;
             return await _context.NhaTros
                 .Where(n => n.UserId == userId)
                 .Select(n => new RentalViewStatsDto
                 {
                     Id = n.Id,
                     Title = n.Title,
+                    Address = n.Address,
+                    Price = n.Price,
+                    Area = n.Area,
                     ViewCount = n.ViewCount,
                     PostedDate = n.PostedDate,
+                    ExpiredDate = n.ExpiredDate,
                     Status = n.Status.ToString()
                 })
                 .OrderByDescending(n => n.ViewCount)
@@ -347,7 +354,7 @@ namespace RentalHouse.Infrastructure.Repositories
                 TotalPosts = await _context.NhaTros.Where(n => n.UserId == userId).CountAsync(),
                 ActivePosts = await _context.NhaTros.Where(n => n.UserId == userId).CountAsync(n =>
                     n.Status == ApprovalStatus.Approved &&
-                    (n.ExpiredDate == null || n.ExpiredDate > now)),
+                    n.ExpiredDate.HasValue && n.ExpiredDate.Value.Date >= now),
                 ExpiredPosts = await _context.NhaTros.Where(n => n.UserId == userId).CountAsync(n =>
                     n.ExpiredDate != null && n.ExpiredDate < now), // Thay đổi >= thành <
                 PendingPosts = await _context.NhaTros.Where(n => n.UserId == userId).CountAsync(n =>
@@ -459,6 +466,29 @@ namespace RentalHouse.Infrastructure.Repositories
             {
                 LogException.LogExceptions(ex);
                 throw new InvalidOperationException("Xảy ra lỗi khi duyệt nhà trọ!");
+            }
+        }
+
+        public async Task<Response> UpdateActive(int id, bool status)
+        {
+            try
+            {
+                var nhatro = await _context.NhaTros.FindAsync(id);
+                if (nhatro!.Id < 1)
+                {
+                    return new Response(false, "Không tìm thấy thông tin nhà trọ!");
+                }
+
+                nhatro.IsActive = status;
+                _context.NhaTros.Update(nhatro);
+                await _context.SaveChangesAsync();
+
+                return new Response(true, "Cập nhật active thành công!");
+            }
+            catch (Exception ex)
+            {
+                LogException.LogExceptions(ex);
+                return new Response(false, ex.Message);
             }
         }
     }

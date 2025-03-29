@@ -12,8 +12,8 @@ using RentalHouse.Infrastructure.Data;
 namespace RentalHouse.Infrastructure.Data.Migrations
 {
     [DbContext(typeof(RentalHouseDbContext))]
-    [Migration("20250322151023_AddApprovalFieldsToNhaTro")]
-    partial class AddApprovalFieldsToNhaTro
+    [Migration("20250329005011_them_IsLock_cho_User_entity")]
+    partial class them_IsLock_cho_User_entity
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -130,6 +130,10 @@ namespace RentalHouse.Infrastructure.Data.Migrations
                     b.Property<int>("NhaTroId")
                         .HasColumnType("int");
 
+                    b.Property<string>("Notes")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
                     b.Property<int>("OwnerId")
                         .HasColumnType("int");
 
@@ -144,6 +148,9 @@ namespace RentalHouse.Infrastructure.Data.Migrations
                     b.Property<int>("UserId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("UserId1")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.HasIndex("NhaTroId");
@@ -152,7 +159,44 @@ namespace RentalHouse.Infrastructure.Data.Migrations
 
                     b.HasIndex("UserId");
 
+                    b.HasIndex("UserId1");
+
                     b.ToTable("Appointments");
+                });
+
+            modelBuilder.Entity("RentalHouse.Domain.Entities.Appointments.AppointmentHistory", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AppointmentId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ChangedById")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AppointmentId");
+
+                    b.HasIndex("ChangedById");
+
+                    b.ToTable("AppointmentHistories");
                 });
 
             modelBuilder.Entity("RentalHouse.Domain.Entities.Auth.User", b =>
@@ -173,6 +217,9 @@ namespace RentalHouse.Infrastructure.Data.Migrations
                     b.Property<string>("FullName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsLock")
+                        .HasColumnType("bit");
 
                     b.Property<string>("Password")
                         .IsRequired()
@@ -266,6 +313,12 @@ namespace RentalHouse.Infrastructure.Data.Migrations
                     b.Property<string>("Furniture")
                         .HasColumnType("nvarchar(255)");
 
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("LastUpdatedDate")
+                        .HasColumnType("datetime2");
+
                     b.Property<float?>("Latitude")
                         .HasColumnType("real");
 
@@ -312,6 +365,9 @@ namespace RentalHouse.Infrastructure.Data.Migrations
                     b.Property<int>("UserId")
                         .HasColumnType("int");
 
+                    b.Property<int>("ViewCount")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.HasIndex("UserId");
@@ -339,6 +395,95 @@ namespace RentalHouse.Infrastructure.Data.Migrations
                     b.HasIndex("NhaTroID");
 
                     b.ToTable("NhaTroImages");
+                });
+
+            modelBuilder.Entity("RentalHouse.Domain.Entities.NhaTros.NhaTroView", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("NhaTroId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("ViewedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("ViewerId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ViewerIp")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NhaTroId");
+
+                    b.HasIndex("ViewerId");
+
+                    b.ToTable("NhaTroViews");
+                });
+
+            modelBuilder.Entity("RentalHouse.Domain.Entities.Reports.Report", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("NhaTroId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ReportType")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NhaTroId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Reports");
+                });
+
+            modelBuilder.Entity("RentalHouse.Domain.Entities.Reports.ReportImage", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ImageUrl")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("ReportId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ReportId");
+
+                    b.ToTable("ReportImages");
                 });
 
             modelBuilder.Entity("RentalHouse.Domain.Entities.Addresses.Districts.District", b =>
@@ -374,20 +519,43 @@ namespace RentalHouse.Infrastructure.Data.Migrations
                     b.HasOne("RentalHouse.Domain.Entities.Auth.User", "Owner")
                         .WithMany()
                         .HasForeignKey("OwnerId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("RentalHouse.Domain.Entities.Auth.User", "User")
-                        .WithMany("Appointments")
+                        .WithMany()
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.HasOne("RentalHouse.Domain.Entities.Auth.User", null)
+                        .WithMany("Appointments")
+                        .HasForeignKey("UserId1");
 
                     b.Navigation("NhaTro");
 
                     b.Navigation("Owner");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("RentalHouse.Domain.Entities.Appointments.AppointmentHistory", b =>
+                {
+                    b.HasOne("RentalHouse.Domain.Entities.Appointments.Appointment", "Appointment")
+                        .WithMany("AppointmentHistories")
+                        .HasForeignKey("AppointmentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("RentalHouse.Domain.Entities.Auth.User", "ChangedBy")
+                        .WithMany()
+                        .HasForeignKey("ChangedById")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Appointment");
+
+                    b.Navigation("ChangedBy");
                 });
 
             modelBuilder.Entity("RentalHouse.Domain.Entities.Favorites.Favorite", b =>
@@ -435,6 +603,51 @@ namespace RentalHouse.Infrastructure.Data.Migrations
                     b.Navigation("NhaTro");
                 });
 
+            modelBuilder.Entity("RentalHouse.Domain.Entities.NhaTros.NhaTroView", b =>
+                {
+                    b.HasOne("RentalHouse.Domain.Entities.NhaTros.NhaTro", "NhaTro")
+                        .WithMany("Views")
+                        .HasForeignKey("NhaTroId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("RentalHouse.Domain.Entities.Auth.User", "Viewer")
+                        .WithMany()
+                        .HasForeignKey("ViewerId");
+
+                    b.Navigation("NhaTro");
+
+                    b.Navigation("Viewer");
+                });
+
+            modelBuilder.Entity("RentalHouse.Domain.Entities.Reports.Report", b =>
+                {
+                    b.HasOne("RentalHouse.Domain.Entities.NhaTros.NhaTro", "NhaTro")
+                        .WithMany()
+                        .HasForeignKey("NhaTroId");
+
+                    b.HasOne("RentalHouse.Domain.Entities.Auth.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("NhaTro");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("RentalHouse.Domain.Entities.Reports.ReportImage", b =>
+                {
+                    b.HasOne("RentalHouse.Domain.Entities.Reports.Report", "Report")
+                        .WithMany("Images")
+                        .HasForeignKey("ReportId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Report");
+                });
+
             modelBuilder.Entity("RentalHouse.Domain.Entities.Addresses.Districts.District", b =>
                 {
                     b.Navigation("Wards");
@@ -443,6 +656,11 @@ namespace RentalHouse.Infrastructure.Data.Migrations
             modelBuilder.Entity("RentalHouse.Domain.Entities.Addresses.Provinces.Province", b =>
                 {
                     b.Navigation("Districts");
+                });
+
+            modelBuilder.Entity("RentalHouse.Domain.Entities.Appointments.Appointment", b =>
+                {
+                    b.Navigation("AppointmentHistories");
                 });
 
             modelBuilder.Entity("RentalHouse.Domain.Entities.Auth.User", b =>
@@ -458,6 +676,13 @@ namespace RentalHouse.Infrastructure.Data.Migrations
                 {
                     b.Navigation("Favorites");
 
+                    b.Navigation("Images");
+
+                    b.Navigation("Views");
+                });
+
+            modelBuilder.Entity("RentalHouse.Domain.Entities.Reports.Report", b =>
+                {
                     b.Navigation("Images");
                 });
 #pragma warning restore 612, 618

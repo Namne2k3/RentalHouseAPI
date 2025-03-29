@@ -9,7 +9,7 @@ namespace RentalHouse.Presentation.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Roles = "Admin")]
+    [Authorize]
     public class ReportController : ControllerBase
     {
         private readonly IReportRepository _reportRepository;

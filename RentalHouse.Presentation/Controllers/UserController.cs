@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using RentalHouse.Application.DTOs;
 using RentalHouse.Application.Interfaces;
+using RentalHouse.SharedLibrary.Logs;
 using RentalHouse.SharedLibrary.Responses;
 using System.Security.Claims;
 
@@ -18,22 +19,62 @@ namespace RentalHouse.Presentation.Controllers
             _repository = repository;
         }
 
+        [HttpPut("LockUser")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult<Response>> LockAccount([FromBody] int userId)
+        {
+            try
+            {
+                var response = await _repository.LockUser(userId);
+                return response.IsSuccess ? Ok(response) : BadRequest(response);
+            }
+            catch (Exception ex)
+            {
+                LogException.LogExceptions(ex);
+                return BadRequest(new Response(false, ex.Message));
+            }
+        }
+
+        [HttpPut("UnlockUser")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult<Response>> UnLockAccount([FromBody] int userId)
+        {
+            try
+            {
+                var response = await _repository.UnlockUser(userId);
+                return response.IsSuccess ? Ok(response) : BadRequest(response);
+            }
+            catch (Exception ex)
+            {
+                LogException.LogExceptions(ex);
+                return BadRequest(new Response(false, ex.Message));
+            }
+        }
+
         [HttpGet("getAllUsers")]
         [Authorize(Roles = "Admin")]
         public async Task<ActionResult<ResponseWithDataList>> GetAllUsers()
         {
-            var users = await _repository.GetAllUsers();
-            return users.Any() ? Ok(new ResponseWithDataList()
+            try
             {
-                IsSuccess = true,
-                Message = "Danh sách người dùng",
-                Data = users
-            }) : NotFound(new ResponseWithDataList()
+                var users = await _repository.GetAllUsers();
+                return users.Any() ? Ok(new ResponseWithDataList()
+                {
+                    IsSuccess = true,
+                    Message = "Danh sách người dùng",
+                    Data = users
+                }) : NotFound(new ResponseWithDataList()
+                {
+                    IsSuccess = false,
+                    Message = "Không có người dùng nào",
+                    Data = null!
+                });
+            }
+            catch (Exception ex)
             {
-                IsSuccess = false,
-                Message = "Không có người dùng nào",
-                Data = null!
-            });
+                LogException.LogExceptions(ex);
+                return BadRequest(new Response(false, ex.Message));
+            }
         }
 
         [HttpPut("updateUser")]
@@ -66,6 +107,33 @@ namespace RentalHouse.Presentation.Controllers
 
             var result = await _repository.ChangePassword(userId, changePasswordDTO.newPassword, changePasswordDTO.currentPassword);
             return result.IsSuccess ? Ok(result) : BadRequest(result);
+        }
+
+        [HttpPost("search")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult<ResponseWithDataList>> SearchUsers([FromBody] SearchUsersDTO searchParams)
+        {
+            try
+            {
+                var users = await _repository.SearchUsers(searchParams);
+                users = users.Where(u => u.Id != int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value));
+                return users.Any() ? Ok(new ResponseWithDataList()
+                {
+                    IsSuccess = true,
+                    Message = "Danh sách người dùng",
+                    Data = users
+                }) : NotFound(new ResponseWithDataList()
+                {
+                    IsSuccess = false,
+                    Message = "Không tìm thấy người dùng nào",
+                    Data = null!
+                });
+            }
+            catch (Exception ex)
+            {
+                LogException.LogExceptions(ex);
+                return BadRequest(new Response(false, ex.Message));
+            }
         }
     }
 }
