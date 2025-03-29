@@ -115,5 +115,45 @@ namespace RentalHouse.Presentation.Controllers
             }
             return Ok(new { message = "Cập nhật trạng thái thành công!" });
         }
+
+        [HttpGet("search")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult<PagedResultDTO<ReportDto>>> SearchReports(
+            [FromQuery] int? reportId,
+            [FromQuery] string? reportType,
+            [FromQuery] int? status,
+            [FromQuery] DateTime? startDate,
+            [FromQuery] DateTime? endDate,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 10)
+        {
+            try
+            {
+                var searchParams = new SearchReportDTO
+                {
+                    ReportId = reportId,
+                    ReportType = reportType,
+                    Status = status,
+                    StartDate = startDate,
+                    EndDate = endDate,
+                    Page = page,
+                    PageSize = pageSize
+                };
+
+                var result = await _reportRepository.SearchReportsAsync(searchParams);
+
+                if (!result.Data.Any())
+                {
+                    return NotFound(new { message = "Không tìm thấy báo cáo nào phù hợp với điều kiện tìm kiếm." });
+                }
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = "Có lỗi xảy ra khi tìm kiếm: " + ex.Message });
+            }
+        }
     }
+
 }

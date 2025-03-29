@@ -10,5 +10,6 @@ namespace RentalHouse.Application.Interfaces
         Task<Report> GetReportByIdAsync(int id);
         Task<Response> CreateReportAsync(CreateReportDto reportDto, List<string> imageUrls);
         Task<bool> UpdateReportStatusAsync(int id, UpdateReportDto updateDto);
+        Task<PagedResultDTO<ReportDto>> SearchReportsAsync(SearchReportDTO searchParams);
     }
 }

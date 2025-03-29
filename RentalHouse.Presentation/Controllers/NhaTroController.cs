@@ -282,5 +282,48 @@ namespace RentalHouse.Presentation.Controllers
             var nhatros = await _repository.GetAllNhaTrosByUserId(id);
             return nhatros.Data!.Any() ? Ok(nhatros) : NotFound("Không tìm thấy nhà trọ!");
         }
+
+        [HttpGet("search")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult<PagedResultDTO<NhaTroDTO>>> SearchNhaTros(
+            [FromQuery] string? title,
+            [FromQuery] int? status,
+            [FromQuery] bool? isActive,
+            [FromQuery] decimal? minPrice,
+            [FromQuery] decimal? maxPrice,
+            [FromQuery] decimal? minArea,
+            [FromQuery] decimal? maxArea,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 20)
+        {
+            try
+            {
+                var searchParams = new SearchNhaTroDTO
+                {
+                    Title = title,
+                    Status = status,
+                    IsActive = isActive,
+                    MinPrice = minPrice,
+                    MaxPrice = maxPrice,
+                    MinArea = minArea,
+                    MaxArea = maxArea,
+                    Page = page,
+                    PageSize = pageSize
+                };
+
+                var result = await _repository.SearchNhaTros(searchParams);
+
+                if (!result.Data.Any())
+                {
+                    return NotFound(new { message = "Không tìm thấy nhà trọ nào phù hợp với điều kiện tìm kiếm." });
+                }
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = "Có lỗi xảy ra khi tìm kiếm: " + ex.Message });
+            }
+        }
     }
 }

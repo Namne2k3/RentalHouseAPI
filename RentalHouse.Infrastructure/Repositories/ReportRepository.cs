@@ -26,17 +26,44 @@ public class ReportRepository : IReportRepository
             .Include(r => r.Images)
             .Include(r => r.User)
             .Include(r => r.NhaTro)
+                .ThenInclude(n => n.User)
             .Select(r => new ReportDto
             {
                 Id = r.Id,
-                UserId = r.User.Id,
+                UserId = r.User!.Id,
+                User = new UserDtoClass()
+                {
+                    Id = r.User.Id,
+                    FullName = r.User.FullName,
+                    Email = r.User.Email,
+                    PhoneNumber = r.User.PhoneNumber!
+                },
+                OnwerFullName = r.NhaTro.User.FullName,
+                OwnerEmail = r.NhaTro.User.Email,
+                OwnerPhoneNumber = r.NhaTro.User.PhoneNumber,
                 ReportType = r.ReportType,
                 Description = r.Description,
-                Images = r.Images.Select(img => img.ImageUrl).ToList(), // Chỉ lấy URL ảnh
+                Images = r.Images.Select(img => img.ImageUrl).ToList(),
                 Status = r.Status,
                 CreatedAt = r.CreatedAt,
                 UpdatedAt = r.UpdatedAt,
-                NhaTro = r.NhaTro
+                NhaTro = new NhaTroReportDTO  // Tạo một DTO riêng cho NhaTro trong báo cáo
+                {
+                    Id = r.NhaTro.Id,
+                    Title = r.NhaTro.Title,
+                    Address = r.NhaTro.Address,
+                    Price = r.NhaTro.Price,
+                    Area = r.NhaTro.Area,
+                    Status = r.NhaTro.Status,
+                    IsActive = r.NhaTro.IsActive,
+                    Owner = new UserDtoClass
+                    {
+                        Id = r.NhaTro.User.Id,
+                        FullName = r.NhaTro.User.FullName,
+                        Email = r.NhaTro.User.Email,
+                        PhoneNumber = r.NhaTro.User.PhoneNumber!
+                    }
+                }
             })
             .ToListAsync();
     }
@@ -142,5 +169,104 @@ public class ReportRepository : IReportRepository
         _context.Reports.Update(report);
         await _context.SaveChangesAsync();
         return true;
+    }
+    public async Task<PagedResultDTO<ReportDto>> SearchReportsAsync(SearchReportDTO searchParams)
+    {
+        try
+        {
+            var query = _context.Reports
+                .Include(r => r.Images)
+                .Include(r => r.User)
+                .Include(r => r.NhaTro)
+                    .ThenInclude(n => n.User)
+                .AsQueryable();
+
+            // Lọc theo ID
+            if (searchParams.ReportId.HasValue)
+            {
+                query = query.Where(r => r.Id == searchParams.ReportId);
+            }
+
+            // Lọc theo loại báo cáo
+            if (!string.IsNullOrEmpty(searchParams.ReportType))
+            {
+                query = query.Where(r => r.ReportType == searchParams.ReportType);
+            }
+
+            // Lọc theo trạng thái
+            if (searchParams.Status.HasValue)
+            {
+                query = query.Where(r => (int)r.Status == searchParams.Status.Value);
+            }
+
+            // Lọc theo khoảng thời gian
+            if (searchParams.StartDate.HasValue)
+            {
+                query = query.Where(r => r.CreatedAt >= searchParams.StartDate.Value);
+            }
+
+            if (searchParams.EndDate.HasValue)
+            {
+                query = query.Where(r => r.CreatedAt <= searchParams.EndDate.Value);
+            }
+
+            // Tính tổng số items
+            var totalItems = await query.CountAsync();
+
+            // Phân trang
+            var reports = await query
+                .OrderByDescending(r => r.CreatedAt)
+                .Skip((searchParams.Page - 1) * searchParams.PageSize)
+                .Take(searchParams.PageSize)
+                .Select(r => new ReportDto
+                {
+                    Id = r.Id,
+                    UserId = r.User!.Id,
+                    User = new UserDtoClass()
+                    {
+                        Id = r.User.Id,
+                        FullName = r.User.FullName,
+                        Email = r.User.Email,
+                        PhoneNumber = r.User.PhoneNumber!
+                    },
+                    OnwerFullName = r.NhaTro.User.FullName,
+                    OwnerEmail = r.NhaTro.User.Email,
+                    OwnerPhoneNumber = r.NhaTro.User.PhoneNumber,
+                    ReportType = r.ReportType,
+                    Description = r.Description,
+                    Images = r.Images.Select(img => img.ImageUrl).ToList(),
+                    Status = r.Status,
+                    CreatedAt = r.CreatedAt,
+                    UpdatedAt = r.UpdatedAt,
+                    NhaTro = new NhaTroReportDTO
+                    {
+                        Id = r.NhaTro.Id,
+                        Title = r.NhaTro.Title,
+                        Address = r.NhaTro.Address,
+                        Price = r.NhaTro.Price,
+                        Area = r.NhaTro.Area,
+                        Status = r.NhaTro.Status,
+                        IsActive = r.NhaTro.IsActive,
+                        Owner = new UserDtoClass
+                        {
+                            Id = r.NhaTro.User.Id,
+                            FullName = r.NhaTro.User.FullName,
+                            Email = r.NhaTro.User.Email,
+                            PhoneNumber = r.NhaTro.User.PhoneNumber!
+                        }
+                    }
+                })
+                .ToListAsync();
+
+            return new PagedResultDTO<ReportDto>(
+                TotalItems: totalItems,
+                TotalPages: (int)Math.Ceiling((double)totalItems / searchParams.PageSize),
+                Data: reports
+            );
+        }
+        catch (Exception ex)
+        {
+            throw new InvalidOperationException("Có lỗi xảy ra khi tìm kiếm báo cáo!", ex);
+        }
     }
 }

@@ -35,5 +35,6 @@ namespace RentalHouse.Application.Interfaces
         Task<RentalStatusStatsDto> GetStatusStatsAsync(int userId);
 
         Task<Response> UpdateActive(int id, Boolean status);
+        Task<PagedResultDTO<NhaTroDTO>> SearchNhaTros(SearchNhaTroDTO searchParams);
     }
 }

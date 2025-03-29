@@ -491,5 +491,76 @@ namespace RentalHouse.Infrastructure.Repositories
                 return new Response(false, ex.Message);
             }
         }
+
+        public async Task<PagedResultDTO<NhaTroDTO>> SearchNhaTros(SearchNhaTroDTO searchParams)
+        {
+            try
+            {
+                var query = _context.NhaTros
+                    .AsNoTracking()
+                    .Include(n => n.Images)
+                    .Include(n => n.User)
+                    .AsQueryable();
+
+                // Áp dụng các điều kiện tìm kiếm
+                if (!string.IsNullOrEmpty(searchParams.Title))
+                {
+                    query = query.Where(n => n.Title.Contains(searchParams.Title));
+                }
+
+                if (searchParams.Status.HasValue)
+                {
+                    query = query.Where(n => (int)n.Status == searchParams.Status.Value);
+                }
+
+                if (searchParams.IsActive.HasValue)
+                {
+                    query = query.Where(n => n.IsActive == searchParams.IsActive.Value);
+                }
+
+                if (searchParams.MinPrice.HasValue)
+                {
+                    query = query.Where(n => n.Price >= searchParams.MinPrice.Value);
+                }
+
+                if (searchParams.MaxPrice.HasValue)
+                {
+                    query = query.Where(n => n.Price <= searchParams.MaxPrice.Value);
+                }
+
+                if (searchParams.MinArea.HasValue)
+                {
+                    query = query.Where(n => n.Area >= searchParams.MinArea.Value);
+                }
+
+                if (searchParams.MaxArea.HasValue)
+                {
+                    query = query.Where(n => n.Area <= searchParams.MaxArea.Value);
+                }
+
+                // Tính tổng số mục
+                var totalItems = await query.CountAsync();
+
+                // Phân trang kết quả
+                var pagedData = await query
+                    .OrderByDescending(n => n.PostedDate)
+                    .Skip((searchParams.Page - 1) * searchParams.PageSize)
+                    .Take(searchParams.PageSize)
+                    .ToListAsync();
+
+                var (_, list) = NhaTroConversion.FromEntity(null, pagedData);
+
+                return new PagedResultDTO<NhaTroDTO>(
+                    TotalItems: totalItems,
+                    TotalPages: (int)Math.Ceiling((double)totalItems / searchParams.PageSize),
+                    Data: list ?? new List<NhaTroDTO>()
+                );
+            }
+            catch (Exception ex)
+            {
+                LogException.LogExceptions(ex);
+                throw new InvalidOperationException("Xảy ra lỗi khi tìm kiếm nhà trọ!", ex);
+            }
+        }
     }
 }
